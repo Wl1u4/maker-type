@@ -1,0 +1,290 @@
+/* The quiz as rated statements (Nov 23). Loaded after styles.css and landing.css.
+   One statement per screen, said big, on a full colour. Then five spots from Disagree on the left to Agree on the right.
+   The statement is the first thing the eye lands on: there is no giant word behind it any more. */
+
+/* ---------- a statement and its scale ---------- */
+.b5 .frame[data-view="question"], .b5 .frame[data-view="pick"] { background: var(--q, var(--ground)); }
+.ask.rate { margin: auto 0; padding: 24px var(--pad) 112px; gap: 40px; justify-items: center; text-align: center; }
+/* Londrina is the approved display face and it is set tight. The type skill asks for 1.1 or more on headings. */
+.statement { max-width: 15ch; font: 900 clamp(44px, 5.8vw, 92px) / 1.02 var(--display); letter-spacing: .005em; text-wrap: balance; }
+.scale-wrap { display: grid; gap: 12px; }
+.scale { display: flex; align-items: center; justify-content: center; gap: clamp(12px, 2vw, 24px); }
+.spot { --d: 72px; flex: none; width: var(--d); height: var(--d); padding: 0; border: 4px solid var(--ink); border-radius: 50%; background: var(--ground); box-shadow: 4px 4px 0 var(--ink); cursor: pointer;
+  -webkit-user-select: none; user-select: none; touch-action: manipulation; transition: scale var(--fast) var(--ease-out), background-color var(--fast) ease; }
+/* bigger at the ends, so "a lot" looks like more than "a little" */
+.spot[data-k="0"], .spot[data-k="4"] { --d: 96px; }
+.spot[data-k="2"] { --d: 56px; }
+.spot[aria-pressed="true"] { background: var(--ink); }
+.spot:active { scale: .94; }
+/* hover is a colour change only: five targets side by side should not jump as the pointer crosses them */
+@media (hover: hover) and (pointer: fine) { .view:not(.fresh) .spot:hover { background: var(--white); } .view:not(.fresh) .spot[aria-pressed="true"]:hover { background: var(--ink); } }
+/* Every circle is named under it, so nothing waits for a hover (critique, Nov 23: on a phone the three middle circles
+   had no visible name). Two levels: the two ends are the display face, the three between are small. The names hang
+   from the circles, and --dmax lines them up on one row whatever the circle's size. */
+.scale { --dmax: 96px; --cap: 28px; padding-bottom: calc(12px + var(--cap)); }
+.spot { position: relative; }
+.spot .cap { position: absolute; left: 50%; top: calc(100% + (var(--dmax) - var(--d)) / 2 + 12px + (var(--cap) - 14px) / 2); translate: -50% 0; font: 600 14px/1 var(--text); color: var(--ink); white-space: nowrap; pointer-events: none; }
+.spot[data-k="0"] .cap, .spot[data-k="4"] .cap { top: calc(100% + 12px); font: 900 var(--cap) / 1 var(--display); }
+.hint.always { display: block; color: var(--ink); font-weight: 600; }
+.b5 .frame[data-view="question"] .hint { color: var(--ink); opacity: .8; }
+
+/* the closing question: four plain cards */
+.answers.picks { grid-template-columns: repeat(2, minmax(0, 340px)); gap: 16px; }
+.answers.picks .answer { min-height: 88px; box-shadow: 4px 4px 0 var(--ink); }
+
+/* ---------- the result ---------- */
+.lean h2 { font-size: clamp(30px, 2.6vw, 40px); line-height: 1.08; }
+/* The breakdown. Two columns: what decided the lean, and what decided how you work.
+   Each row is one statement: a mark for the answer, the words, and which way it pulled. */
+.why { margin-top: 24px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 48px; }
+.col { display: grid; gap: 32px; align-content: start; }
+.grp h4 { margin: 0; font: 900 28px/1.1 var(--display); }
+.grp .how { margin-top: 4px; font-size: 16px; font-weight: 400; color: var(--color-text-quiet); }
+.grp ul { margin: 16px 0 0; padding: 0; list-style: none; display: grid; gap: 12px; }
+.row { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; column-gap: 12px; align-items: center; }
+.row i { width: 32px; height: 32px; border: 3px solid var(--ink); border-radius: 8px; }
+.row .d { background: var(--accent); }
+.row .b { background: linear-gradient(135deg, var(--accent) 50%, var(--white) 50%); }
+.row .e { background: var(--white); }
+.row .i { background: repeating-linear-gradient(135deg, var(--ink) 0 2px, var(--white) 2px 8px); }
+.row .x { background: repeating-linear-gradient(135deg, var(--ink) 0 3px, var(--white) 3px 6px); }
+.row p { margin: 0; font-size: 16px; font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; }
+.row small { display: block; font-size: 14px; font-weight: 400; color: var(--color-text-quiet); }
+/* a score: green for plus, red for minus, and the sign is always written */
+.pull { min-width: 52px; padding: 4px 12px; border: 3px solid var(--ink); border-radius: 999px; background: var(--paper); font: 900 18px/1.2 var(--display); text-align: center; white-space: nowrap; }
+.pull.plus { background: var(--plus); }
+.pull.minus { background: var(--minus); }
+.pull.none { color: var(--color-text-quiet); border-color: var(--color-text-quiet); }
+.grp .sum { margin-top: 16px; padding-top: 12px; border-top: 3px solid var(--ink); display: flex; align-items: center; justify-content: space-between; gap: 12px; font: 900 22px/1.1 var(--display); }
+.grp .sum small { display: block; margin-top: 2px; font: 400 14px/1.3 var(--text); color: var(--color-text-quiet); }
+.grp .sum .pull { font-size: 22px; padding: 6px 16px; }
+/* the conclusion: four totals in a row, the two sums in words, then the result */
+.verdict { margin-top: 32px; padding: 24px; border: 4px solid var(--ink); border-radius: 24px; background: var(--ground); }
+.verdict h4 { margin: 0; font: 900 28px/1.1 var(--display); }
+.totals { margin: 16px 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.totals li { display: grid; justify-items: start; gap: 6px; font: 900 20px/1.1 var(--display); }
+.totals .pull { font-size: 28px; padding: 6px 18px; }
+.verdict p { margin: 4px 0 0; font-size: 16px; font-weight: 600; }
+.verdict .so { margin-top: 16px; padding-top: 16px; border-top: 3px solid var(--ink); font: 900 clamp(26px, 2.6vw, 36px) / 1.08 var(--display); text-wrap: balance; }
+/* the pair that decided how you work */
+.grp.earned h4::after { content: ""; display: inline-block; width: 14px; height: 14px; margin-left: 10px; border: 3px solid var(--ink); border-radius: 50%; background: var(--accent); }
+.note { font-weight: 600; font-size: 16px; }
+.sure-tile h3 { position: relative; font: 600 14px/1.3 var(--text); color: rgb(255 255 255 / .75); }
+.sure-tile p { font-size: 24px; }
+.sure-tile { grid-column: span 3; align-content: end; gap: 8px; }
+/* The card on the page matches the image you save. Each way of working has its own card colour, and the lean is a
+   chip in the lean's colour, so no two results give the same card. */
+.holo-card { background: var(--role, var(--ground)); }
+.h-word { color: var(--paper); }
+.h-ask { padding: 6px 8px; border: 3px solid var(--ink); border-radius: 12px; background: var(--lean, var(--paper)); }
+.h-pre { top: 22px; }
+.h-word { top: 56px; }
+.h-ask { width: 132px; font-size: 18px; }
+
+@media (max-width: 899px) { .why { grid-template-columns: 1fr; } }
+@media (max-width: 640px) {
+  .why { margin-top: 16px; gap: 24px; } .col { gap: 24px; } .grp h4 { font-size: 24px; }
+  .row { grid-template-columns: 28px minmax(0, 1fr) auto; column-gap: 8px; } .row i { width: 28px; height: 28px; } .pull { min-width: 44px; padding: 2px 8px; font-size: 16px; }
+  .verdict { margin-top: 24px; padding: 16px; border-radius: 20px; } .totals { grid-template-columns: repeat(2, minmax(0, 1fr)); } .totals .pull { font-size: 24px; }
+  .ask.rate { margin: auto 0; padding: 8px var(--pad) 96px; gap: 28px; justify-items: center; text-align: center; }
+  .statement { font-size: clamp(34px, 10.4vw, 46px); max-width: 13ch; }
+  .scale { gap: 10px; --dmax: 64px; --cap: 20px; } .spot .cap { font-size: 13px; }
+  .spot { --d: 52px; box-shadow: 3px 3px 0 var(--ink); }
+  .spot[data-k="0"], .spot[data-k="4"] { --d: 64px; }
+  .spot[data-k="2"] { --d: 46px; }
+  .answers.picks { grid-template-columns: 1fr; gap: 12px; width: 100%; }
+  .answers.picks .answer { min-height: 64px; place-items: center; text-align: center; }
+  .lean h2 { font-size: 30px; }
+}
+/* a phone around 360 wide (most Android phones): the row was wider than its space, so the circles come down a size */
+@media (max-width: 380px) { .scale { gap: 8px; --dmax: 58px; --cap: 18px; } .spot { --d: 48px; } .spot[data-k="0"], .spot[data-k="4"] { --d: 58px; } .spot[data-k="2"] { --d: 44px; } .spot .cap { font-size: 12px; } }
+/* a very narrow phone: five equal spots, each still big enough for a thumb */
+@media (max-width: 359px) { .scale { gap: 6px; --dmax: 46px; --cap: 15px; } .spot .cap { font-size: 12px; } .spot, .spot[data-k="0"], .spot[data-k="4"], .spot[data-k="2"] { --d: 46px; } .statement { font-size: 32px; } }
+/* short screens: the statement and the scale stay on screen */
+@media (max-height: 700px) { .ask.rate { padding-bottom: 24px; gap: 24px; } .statement { font-size: clamp(30px, 8svh, 60px); } }
+
+@media (prefers-reduced-motion: reduce) { .spot { transition: background-color var(--fast) ease; } .spot:active { scale: 1; } }
+
+/* the tiles under the result each take a colour of their own */
+.next { background: var(--tone-2); }
+.other { background: var(--tone-3); }
+.card-tile { background: var(--paper); }
+
+/* ---------- colour has three levels under the result (Will, Nov 23: "not everything needs a color that strong or weak there needs hierachy") ----------
+   One colour carries the result: the colour of your way of working.
+   Level 1 the word, the card and the conclusion. Level 2 the group totals and the next step. Level 3 the sixteen rows, which stay quiet. */
+:root { --role-soft: color-mix(in srgb, var(--role, var(--tone-1)) 26%, var(--paper)); --hair: color-mix(in srgb, var(--ink) 14%, transparent); }
+/* tiles stop competing: all paper, and only the next step takes a tint of the result's colour */
+.tile.other, .tile.card-tile, .tile.sure-tile { background: var(--paper); color: var(--ink); box-shadow: none; }
+.sure-tile::before { content: none; }
+.sure-tile h3 { color: var(--color-text-quiet); }
+.tile.next { background: var(--role-soft); box-shadow: none; }
+/* the conclusion is the one filled block inside the breakdown */
+.verdict { border: 0; background: var(--role-soft); }
+/* a row says what you answered in words already, so the coloured square goes */
+.row { grid-template-columns: minmax(0, 1fr) auto; }
+.row i { display: none; }
+.row + .row { padding-top: 12px; border-top: 1px solid var(--hair); }
+.grp ul { gap: 12px; }
+.grp .sum { border-top: 2px solid var(--ink); }
+.pull.none { border-color: transparent; }
+
+
+/* rows are just a signed number in dark green or dark red. Group totals are pale tints. Only the four totals in the conclusion are solid. */
+.row .pull { min-width: 32px; padding: 0; border: 0; background: none; text-align: right; font-size: 18px; }
+.row .pull.plus { color: var(--plus-ink); }
+.row .pull.minus { color: var(--minus-ink); }
+.grp .sum .pull { border-color: transparent; }
+.grp .sum .pull.plus { background: color-mix(in srgb, var(--plus) 45%, var(--paper)); }
+.grp .sum .pull.minus { background: color-mix(in srgb, var(--minus) 45%, var(--paper)); }
+.grp .sum { border-top: 1px solid var(--hair); }
+
+/* ---------- the lean bar (tug.js) ----------
+   Will, Nov 23: "its really this progress bar that im not understanding at all... nothing is labeled".
+   So: both ends are named under the bar, the middle third is marked and named, and a knob shows where you are.
+   It speaks in the penguin's own colours (ink, paper, the beak's gold), so it sits on any background.
+   Both sides fill in the same gold: the names say which side is which, so nothing rests on hue or on a pattern. */
+.tug { --h: 28px; --k: calc(var(--h) + 20px); display: grid; gap: 8px; width: 100%; color: var(--ink); text-align: left; }
+.tug-bar { position: relative; height: var(--h); }
+.tug-track { position: absolute; inset: 0; border: 4px solid var(--ink); border-radius: 999px; background: var(--paper); overflow: hidden; box-shadow: 4px 4px 0 var(--ink); }
+.tug-half { position: absolute; top: 0; bottom: 0; overflow: hidden; }
+.tug-d { left: calc(var(--k) / 2 - 4px); right: 50%; } .tug-s { left: 50%; right: calc(var(--k) / 2 - 4px); }
+.tug-half b { display: block; width: 100%; height: 100%; background: var(--accent); transition: transform 160ms var(--ease-out); }
+.tug-d b { transform: translateX(100%); } .tug-s b { transform: translateX(-100%); }
+/* the middle third: two ticks. Inside them is "in between". */
+.tug-mid { position: absolute; top: 0; bottom: 0; left: calc(var(--k) / 2 - 4px + (100% + 8px - var(--k)) / 3); width: calc((100% + 8px - var(--k)) / 3); border-inline: 3px solid var(--ink); }
+.tug-rail { position: absolute; top: 0; bottom: 0; left: calc(var(--k) / 2); right: calc(var(--k) / 2); pointer-events: none; }
+.tug-car { width: 100%; height: 100%; transform: translateX(50%); transition: transform 160ms var(--ease-out); }
+.tug-knob { position: absolute; left: 0; top: 50%; width: var(--k); height: var(--k); margin: calc(var(--k) / -2) 0 0 calc(var(--k) / -2); border: 4px solid var(--ink); border-radius: 50%; background: var(--paper); box-shadow: 3px 3px 0 var(--ink); transition: scale 160ms var(--ease-out); }
+.tug-knob::after { content: ""; position: absolute; inset: 28%; border-radius: 50%; background: var(--ink); }
+.tug-tag { position: absolute; left: 50%; bottom: calc(100% + 12px); translate: -50% 0; padding: 4px 8px; border: 3px solid var(--ink); border-radius: 10px; background: var(--paper); font: 900 18px/1.1 var(--display); font-style: normal; white-space: nowrap; transition: opacity 200ms var(--ease-out); }
+.tug-tag::after { content: ""; position: absolute; left: 50%; bottom: -8px; width: 10px; height: 10px; background: var(--paper); border-right: 3px solid var(--ink); border-bottom: 3px solid var(--ink); rotate: 45deg; translate: -50% 0; }
+/* The names under the bar (Will, Nov 23: "Font for text design and info sys on slider need typography").
+   One face, two sizes: the two ends are big, the middle is about two thirds of that. Each name sits in a tag,
+   and the tag you are on turns to ink, so the bar says its answer in words as well as by position. */
+.tug-names { display: grid; grid-template-columns: 1fr auto 1fr; align-items: start; gap: 8px; margin-top: 4px; }
+.tug-names span { padding: 4px 12px; border-radius: 12px; font: 900 var(--name, 24px) / 1 var(--display); letter-spacing: .01em; transition: background-color 160ms ease, color 160ms ease; }
+.tug-names > :first-child { justify-self: start; }
+.tug-names > :last-child { justify-self: end; text-align: right; text-wrap: balance; }
+.tug-names > :nth-child(2) { justify-self: center; align-self: center; font-size: max(16px, calc(var(--name, 24px) * .68)); text-align: center; white-space: nowrap; }
+.tug[data-lean="design"] .tug-names > :first-child, .tug[data-lean="between"] .tug-names > :nth-child(2), .tug[data-lean="is"] .tug-names > :last-child { background: var(--ink); color: var(--paper); }
+/* the one you drag: the browser's own slider lies over the bar, unseen, so the keyboard and screen readers get a real one */
+.tug.drag input { position: absolute; z-index: 2; left: 0; right: 0; top: calc((var(--h) - var(--k)) / 2 - 8px); width: 100%; height: calc(var(--k) + 16px); margin: 0; opacity: 0; cursor: grab; touch-action: pan-y; -webkit-appearance: none; appearance: none; }
+.tug.drag input::-webkit-slider-thumb { -webkit-appearance: none; width: var(--k); height: var(--k); }
+.tug.drag input::-moz-range-thumb { width: var(--k); height: var(--k); border: 0; }
+.tug.drag input:focus-visible ~ .tug-rail .tug-knob { outline: 4px solid var(--ink); outline-offset: 4px; }
+/* while you hold it, it is your finger: no easing between you and the knob */
+.tug.held input { cursor: grabbing; } .tug.held .tug-car, .tug.held .tug-half b { transition: none; will-change: transform; } .tug.held .tug-knob { scale: 1.1; }
+.tug.used .tug-tag { opacity: 0; }
+
+/* ---------- the result sits on the colour of your way of working (Will: "i dont feel like the white background is working") ---------- */
+.b5 .frame[data-view="result"] { background: var(--q, var(--ground)); }
+[data-view="result"] .giant { color: var(--paper); }
+[data-view="result"] .lean { gap: 16px; }
+[data-view="result"] .tug { margin-top: 40px; }      /* room for the "You" tag above the knob */
+[data-view="result"] .tug { --name: 24px; }
+.note:empty { display: none; }
+@keyframes tug-car-in { from { transform: translateX(50%); } }
+@keyframes tug-d-in { from { transform: translateX(100%); } }
+@keyframes tug-s-in { from { transform: translateX(-100%); } }
+.view.reveal .tug-car { animation: tug-car-in 600ms var(--ease-out) 520ms both; }
+.view.reveal .tug-d b { animation: tug-d-in 600ms var(--ease-out) 520ms both; }
+.view.reveal .tug-s b { animation: tug-s-in 600ms var(--ease-out) 520ms both; }
+.view.reveal .tug-bar, .view.reveal .tug-names { animation: fade var(--base) ease 360ms both; }
+.view.reveal .tug-tag { animation: fade var(--base) ease 1100ms both; }
+
+/* ---------- what you said beside what your answers showed: two small labels, two big answers ---------- */
+.sure-tile { align-content: center; gap: 0; }
+.sure-tile dl { margin: 0; display: grid; gap: 20px; }
+.sure-tile dl > div + div { padding-top: 20px; border-top: 1px solid var(--hair); }
+.sure-tile dt { font: 600 14px/1.3 var(--text); color: var(--color-text-quiet); }
+.sure-tile dd { margin: 4px 0 0; font: 900 32px/1.05 var(--display); overflow-wrap: anywhere; }
+
+@media (max-width: 640px) {
+  .tug { --name: 20px; }
+  .sure-tile dd { font-size: 28px; }
+}
+@media (prefers-reduced-motion: reduce) { .tug-car, .tug-half b, .tug-knob { transition: none; } }
+/* below 1200 the result stacks and the bar would run the full width: keep it a bar, not a rule across the page */
+@media (max-width: 1199px) { [data-view="result"] .lean .tug { max-width: 480px; } }
+/* a very narrow phone: the three names still fit on one row */
+.tug, .tug-names span { min-width: 0; }
+@media (max-width: 359px) { .tug { --name: 18px; } .b3 .tug { --name: 20px; } }
+
+
+/* The names lay themselves out from the bar's own width, not the screen's (stress test, Nov 24: at 1200 to 1400 wide the
+   result's bar is only 310 to 400px and "In between" ran into "Information"). Under 520px of bar the two ends take the
+   row, one line each, and the middle name gets its own line under them, so no two names can touch. */
+.tug { container-type: inline-size; }
+@container (max-width: 520px) {
+  .tug-names { grid-template-columns: auto auto; justify-content: space-between; row-gap: 0; }
+  .tug-names span { padding: 4px 8px; white-space: nowrap; }
+  .tug-names > :first-child { grid-area: 1 / 1; } .tug-names > :last-child { grid-area: 1 / 2; }
+  .tug-names > :nth-child(2) { grid-area: 2 / 1 / 3 / 3; font-size: 16px; }
+}
+@container (max-width: 270px) { .tug-names span { padding: 4px 6px; } }
+
+/* The result on a laptop. Most laptop windows are 700 to 800 tall once the browser's bars are counted, and there the fixed
+   440px penguin rose into the giant word and stood on the line beside it (stress test, Nov 24: 1280 x 720, 1366 x 768).
+   Now the penguin is sized from the height of the window. */
+@media (min-width: 1200px) { [data-view="result"] .winner img { width: auto; height: clamp(220px, calc(100svh - 450px), 440px); } }
+
+/* ---------- under the result, lighter (Will, Nov 24: "too much textual overload... not using hierarchy correctly") ----------
+   Three levels. 1: what it added up to, four totals and the result line, on the one tinted tile. 2: what to take away,
+   your card and one next step. 3: every single answer, only for whoever opens it, and on the sheet you can print.
+   Five type sizes in this part of the page: 56 the heading, 32 tile titles and big answers, 20 the lead, 16 text, 14 small.
+   (From the "everything in a card" item on his slop list: the answers are a plain table inside the tile, with no box of their own.) */
+.more-sub { max-width: 40ch; }
+.tile h3 { font-size: 32px; }
+.tile.sums { grid-column: 1 / 9; background: var(--role-soft); }
+.tile.card-tile { grid-column: 9 / 13; grid-row: 1 / 3; }
+.tile.next { grid-column: 1 / 6; min-height: 280px; background: var(--paper); }
+.tile.sure-tile { grid-column: 6 / 9; }
+.next h3, .next p { max-width: calc(100% - 130px); } .next > img { width: 210px; right: -20px; bottom: -30px; }
+.sums .totals { margin: 20px 0 0; }
+.sums .so { margin: 20px 0 0; padding-top: 16px; border-top: 3px solid var(--ink); font: 900 clamp(24px, 2.4vw, 32px) / 1.1 var(--display); text-wrap: balance; }
+.all { margin-top: 12px; }
+.all summary { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font: 600 16px/1.3 var(--text); text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
+.all summary:focus-visible { outline: 4px solid var(--ink); outline-offset: 4px; border-radius: 8px; }
+.all .why { margin-top: 12px; }
+.rule { margin: 12px 0 0; font-size: 14px; font-weight: 400; color: var(--color-text-quiet); }
+.tile p.rule { margin-top: 12px; font-size: 14px; font-weight: 400; }
+.grp h4 { font-size: 20px; }
+.grp .sum { font-size: 16px; font-family: var(--text); font-weight: 600; } .grp .sum .pull { font-size: 16px; padding: 4px 12px; }
+.saves { display: grid; gap: 8px; width: 100%; } .saves .btn { min-height: 52px; padding: 0 16px; font-size: 22px; }
+.card-tile .btn { margin-top: 0; }
+@media (max-width: 1023px) { .tile.sums, .tile.card-tile, .tile.next, .tile.sure-tile { grid-column: 1 / -1; grid-row: auto; } }
+@media (max-width: 640px) { .tile h3 { font-size: 28px; } .next h3, .next p { max-width: none; } .next > img { width: 200px; } .sums .totals { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; } .sums .totals li { font-size: 16px; } .sums .totals .pull { font-size: 20px; padding: 4px 10px; min-width: 0; } }
+
+/* ---------- the sheet: your result on one page, to print or save as a PDF (his ask: "produce a pdf or something that users can save") ----------
+   It is built by result() in app.js and is never shown on screen. Printing hides the whole site and shows only this. */
+#sheet { display: none; }
+@media print {
+  @page { margin: 11mm; }
+  html, body { background: #fff !important; }
+  body > :not(#sheet) { display: none !important; }
+  #sheet { display: block; color: var(--ink); font: 400 10.5pt/1.4 var(--text); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  #sheet * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  /* (#sheet in front of each rule, so the plain "#sheet p" size below cannot shrink the big word) */
+  #sheet .sh-top { position: relative; overflow: hidden; padding: 12pt 16pt 12pt; border: 3pt solid var(--ink); border-radius: 18pt; background: var(--role, var(--ground)); break-inside: avoid; }
+  #sheet .sh-brand { margin: 0; font: 900 11pt/1 var(--display); }
+  #sheet .sh-pre { margin: 10pt 0 0; font: 900 14pt/1 var(--display); }
+  #sheet .sh-word { margin: 2pt 0 0; font: 900 44pt/1 var(--display); color: var(--paper); -webkit-text-stroke: 5pt var(--ink); paint-order: stroke fill; white-space: nowrap; }
+  #sheet .sh-line { margin: 6pt 0 0; max-width: 64%; font: 900 14pt/1.1 var(--display); }
+  #sheet .sh-top .tug { --h: 14pt; --k: 24pt; --name: 12pt; width: 60%; margin-top: 26pt; }
+  #sheet .tug-track { border-width: 2.5pt; box-shadow: 2pt 2pt 0 var(--ink); } #sheet .tug-knob { border-width: 2.5pt; box-shadow: none; } #sheet .tug-mid { border-inline-width: 2pt; }
+  #sheet .tug-tag { font-size: 10pt; padding: 2pt 6pt; border-width: 2pt; bottom: calc(100% + 7pt); } #sheet .tug-tag::after { display: none; }
+  #sheet .tug-names span { padding: 2pt 6pt; border-radius: 6pt; } #sheet .tug-names > :nth-child(2) { font-size: 10pt; }
+  #sheet .sh-pen { position: absolute; right: 10pt; bottom: -8pt; width: 27%; height: auto; }
+  #sheet .sh-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20pt; margin-top: 6pt; }
+  #sheet h3 { margin: 9pt 0 2pt; font: 900 13pt/1.1 var(--display); break-after: avoid; }
+  #sheet p { margin: 0 0 2pt; font-size: 9.5pt; font-weight: 400; line-height: 1.35; }
+  #sheet dl { display: grid; grid-template-columns: 1fr 1fr; gap: 10pt; margin: 6pt 0 0; } #sheet dl > div + div { padding-top: 0; border-top: 0; } #sheet dt { font: 600 8pt/1.3 var(--text); color: var(--color-text-quiet); } #sheet dd { margin: 0; font: 900 12pt/1.1 var(--display); }
+  #sheet .totals { margin: 3pt 0 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8pt; } #sheet .totals li { display: flex; align-items: center; gap: 6pt; font: 900 11pt/1.1 var(--display); } #sheet .totals .pull { min-width: 0; font-size: 11pt; padding: 1pt 8pt; border-width: 1.5pt; }
+  #sheet .why { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20pt; margin-top: 8pt; } #sheet .col { gap: 8pt; }
+  #sheet .grp { break-inside: avoid; } #sheet .grp h4 { font: 900 11pt/1.1 var(--display); } #sheet .grp ul { margin-top: 3pt; gap: 2pt; }
+  #sheet .row + .row { padding-top: 2pt; } #sheet .row p { font-size: 9pt; font-weight: 400; line-height: 1.2; } #sheet .row .pull { font-size: 9.5pt; min-width: 18pt; }
+  #sheet .grp .sum { margin-top: 3pt; padding-top: 3pt; font-size: 9pt; } #sheet .grp .sum .pull { font-size: 9.5pt; padding: 0 8pt; min-width: 0; }
+  #sheet .rule { margin-top: 5pt; font-size: 8.5pt; }
+  #sheet .sh-foot { margin-top: 5pt; font-size: 8pt; color: var(--color-text-quiet); }
+}

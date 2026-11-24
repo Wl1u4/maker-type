@@ -1,0 +1,279 @@
+/* The landing: four colour chapters in front of the quiz, and the dark chapter the quiz sits in.
+   From the second study of Sweet Tape and Cyera (references/NOTES.md): colour is the layout, the giant word is a second
+   tone of its chapter, the next colour arrives on a curve, things sit at different depths. Transform and opacity only. */
+:root {
+  /* colours are roles from palette.css (ground, light, accent, chapter backgrounds and so on). No colour is named here. */
+  --curve: clamp(40px, 7vw, 100px); --lpad: clamp(20px, 5vw, 72px);
+}
+html { overflow-x: clip; }
+body { background: var(--ground); overflow-x: clip; }
+
+/* ---------- always there: the mark, and one button ---------- */
+.bar-top { position: fixed; z-index: 30; left: 0; right: 0; top: 0; display: flex; justify-content: space-between; align-items: center; padding: max(14px, env(safe-area-inset-top, 0px)) max(var(--lpad), env(safe-area-inset-right, 0px)) 0 max(var(--lpad), env(safe-area-inset-left, 0px)); pointer-events: none; }
+/* the mark: the thinking Shaper's head, cropped from the drawing */
+.mark { display: block; width: 64px; height: 64px; overflow: hidden; border: 4px solid var(--ink); border-radius: 20px; background: var(--mark-bg); box-shadow: 4px 4px 0 var(--ink); pointer-events: auto; rotate: -4deg; }
+.mark img { display: block; width: 189%; max-width: none; height: auto; margin: -24% 0 0 -48%; }
+/* under the result the mark would sit on top of what you are reading, so it steps out there */
+.mark { transition: opacity 200ms var(--ease-out), visibility 0s; }
+.mark.away { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 200ms var(--ease-out), visibility 0s 200ms; }
+.go { pointer-events: auto; padding: 14px 22px; border: 4px solid var(--ink); border-radius: 16px; background: var(--ink); color: var(--light); font: 900 22px/1 var(--display); text-decoration: none; box-shadow: 5px 5px 0 var(--light); opacity: 0; visibility: hidden; transition: opacity 200ms var(--ease-out), visibility 0s 200ms; -webkit-user-select: none; user-select: none; }
+.go.on { opacity: 1; visibility: visible; transition: opacity 200ms var(--ease-out); }
+
+/* ---------- a chapter ---------- */
+.beat { position: relative; min-height: 100svh; padding: 112px var(--lpad) calc(56px + var(--curve)); display: grid; grid-template-columns: minmax(0, 1fr); align-content: center; justify-items: center; text-align: center; background: var(--bg); color: var(--fg, var(--ink)); }
+.beat + .beat { margin-top: calc(var(--curve) * -1); padding-top: calc(112px + var(--curve)); background: none; scroll-margin-top: calc(var(--curve) * -.7); }
+.beat + .beat::before { content: ""; position: absolute; z-index: 0; left: -12%; right: -12%; top: 0; bottom: 0; background: var(--bg); border-radius: 50% 50% 0 0 / var(--curve) var(--curve) 0 0; }
+.beat > * { position: relative; z-index: 1; }
+.word { font: 900 min(36svh, calc((100vw - 2 * var(--lpad)) / (var(--n) * .5))) / .86 var(--display); color: var(--tone); white-space: nowrap;
+  -webkit-text-stroke: clamp(3px, .5vw, 7px) var(--ink); text-shadow: clamp(4px, .9vw, 12px) clamp(4px, .9vw, 12px) 0 var(--ink); }
+/* letters rise one by one out of a clip, once, when the chapter arrives */
+.word .clip { display: inline-block; overflow: hidden; padding: .06em .09em .12em .02em; margin: -.06em -.09em -.12em -.02em; vertical-align: top; }
+.word .ch { display: inline-block; transform: translateY(112%); transition: transform 420ms var(--ease-out); transition-delay: calc(var(--i) * 30ms); }
+.beat.in .word .ch { transform: none; }
+.says { max-width: 22ch; margin-top: clamp(24px, 5svh, 48px); font: 900 clamp(26px, 3.2vw, 42px) / 1.1 var(--display); text-wrap: balance; }
+.pen { position: absolute !important; z-index: 2 !important; pointer-events: none; }
+.pen img { display: block; width: 100%; height: auto; max-width: none; }
+.pen canvas { display: block; width: 100%; aspect-ratio: 340 / 330; }
+/* the part of the canvas you can grab: the penguin itself, not the air around it */
+.pen .hit { position: absolute; left: 30%; right: 30%; top: 10%; bottom: 6%; border-radius: 45%; pointer-events: auto; cursor: grab; touch-action: pan-y; -webkit-user-select: none; user-select: none; }
+.pen .hit:active { cursor: grabbing; }
+.say { position: absolute; left: 50%; bottom: 96%; translate: -50% 0; padding: 8px 16px; background: var(--paper); color: var(--ink); border: 4px solid var(--ink); border-radius: 16px; font: 900 22px/1.1 var(--display); white-space: nowrap;
+  transform-origin: 50% 100%; }
+.say::after { content: ""; position: absolute; left: 50%; bottom: -12px; width: 16px; height: 16px; background: var(--paper); border-right: 4px solid var(--ink); border-bottom: 4px solid var(--ink); rotate: 45deg; translate: -50% 0; }
+
+/* background: a few flat shapes drift slowly, only while their chapter is on screen. Kept to the edges. */
+.amb { position: absolute !important; z-index: 0 !important; inset: 0; overflow: hidden; pointer-events: none; }
+.amb svg { position: absolute; left: var(--x); top: var(--y); width: var(--s, 64px); height: var(--s, 64px); fill: var(--tone); stroke: var(--ink); stroke-width: 5; stroke-linejoin: round; overflow: visible;
+  rotate: var(--r0, -8deg); }
+/* Nothing on the page moves by itself for more than five seconds (WCAG 2.2.2, critique Nov 23). The shapes drift out and
+   back once as their chapter arrives, the tab nods a few times, and each plays again the next time the chapter comes on screen. */
+.beat.live .amb svg { animation: drift 2.3s ease-in-out 2 alternate; }
+@keyframes drift { from { translate: 0 0; rotate: var(--r0, -8deg); } to { translate: var(--dx, 18px) var(--dy, -26px); rotate: var(--r1, 14deg); } }
+/* Focus ring on anything that can sit on a dark colour: the ink ring gets a cream band inside and outside it,
+   so it shows on the black chapter as well as on the light ones. */
+.cue:focus-visible, .mark:focus-visible, .go:focus-visible { box-shadow: 0 0 0 3px var(--light), 0 0 0 11px var(--light); }
+/* the way on: a tab on the next colour's curve */
+.cue { position: absolute !important; z-index: 4 !important; left: 50%; bottom: calc(var(--curve) * .16); width: 60px; height: 60px; margin-left: -30px; display: grid; place-items: center; border: 4px solid var(--ink); border-radius: 18px; background: var(--paper); color: var(--ink); box-shadow: 4px 4px 0 var(--ink); transition: scale 120ms var(--ease-out); }
+.beat.live .cue { animation: nod 1.2s ease-in-out 4 alternate; }      /* even both ways: an ease-out played back and forth is fast one way and slow the other */
+.cue:active, .go:active { scale: .95; }
+.cue svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
+@keyframes nod { from { translate: 0 -5px; } to { translate: 0 5px; } }
+
+/* ---------- 1 open ---------- */
+/* the word is cream here, not sun, so the penguin's yellow hat and pencil stand clear of it */
+.b1 { --bg: var(--c1-bg); --tone: var(--c1-word); --fg: var(--c1-fg); align-content: start; }
+.b1 .amb svg { fill: var(--hero-accent); }
+.b1 .pre { justify-self: start; font: 900 clamp(34px, 4.6vw, 60px) / 1 var(--display); }
+.b1 .word { margin-top: 12px; }
+/* One big penguin, full size, standing under the word and clear of it. Will, Nov 23: "create a bit more space between the
+   penguin model and the big font maker? cuz its block a little", then "make the model the same size as before just not too
+   close to maker". So the penguin keeps its size and the word gives way: on a wide screen the line moves up beside the mark,
+   and the word starts higher and is smaller than the other chapters' words. --p is the canvas width. With its tallest prop
+   the penguin is about 62% as tall as that. */
+.b1 .pen.big { --p: min(72svh, 56vw); left: 50%; bottom: calc(var(--curve) - 2px); width: var(--p); margin-left: calc(var(--p) * -.57); }
+@media (min-width: 641px) {
+  .b1 { padding-top: clamp(84px, 11svh, 104px); }
+  .b1 .pre { position: absolute; left: 0; right: 0; top: max(14px, env(safe-area-inset-top, 0px)); justify-self: stretch; text-align: center; font-size: clamp(30px, 3.4vw, 46px); line-height: 64px; }   /* centred over the word, so the two read as one headline */
+  .b1 .word { margin-top: 0; font-size: min(24svh, calc((100vw - 2 * var(--lpad)) / (var(--n) * .5))); }
+  /* A short window (a laptop with its toolbars, a phone on its side, a page zoomed in): the third limit keeps the penguin's
+     hat under the word. It works out the room left between the word and the curve. Stress test, Nov 24. */
+  .b1 .pen.big { --p: min(72svh, 56vw, calc((79svh - var(--curve) - clamp(84px, 11svh, 104px) - 10px) / .71)); }
+  .b1 .amb svg:nth-child(3) { --x: 8% !important; --y: 30% !important; }      /* it sat behind the line by the button on wide, short windows */
+}
+/* Between a phone and a laptop the button would stand on the penguin. On its side: the penguin stands smaller and to the left. */
+@media (min-width: 641px) and (max-width: 1000px) {
+  .b1 .pen.big { --p: min(72svh, 46vw, calc((79svh - var(--curve) - clamp(84px, 11svh, 104px) - 10px) / .71)); margin-left: calc(var(--p) * -.78); }
+  .b1 .amb svg:nth-child(2) { display: none; }                                  /* it sat behind the question mark */
+}
+/* A tablet held upright: the phone's arrangement. A big penguin in the middle, the line and the button centred under it. */
+@media (min-width: 641px) and (max-width: 1000px) and (orientation: portrait) {
+  .beat.b1 .pen.big { --p: min(100vw, calc((100svh - 420px) * 1.03)); bottom: calc(var(--curve) + 136px); margin-left: calc(var(--p) * -.57); }
+  .beat.b1 .btn { left: var(--lpad); right: var(--lpad); bottom: calc(var(--curve) + 28px); width: min(100% - 2 * var(--lpad), 420px); margin-inline: auto; }
+  .beat.b1 .for { left: var(--lpad); right: var(--lpad); bottom: calc(var(--curve) + 28px + 84px); max-width: none; text-align: center; }
+  .beat.b1 .cue { display: none; }
+}
+/* the bubble sits by its free flipper, under the word and clear of whatever it is holding */
+.b1 .pen.big .say { left: auto; right: 77%; bottom: 40%; translate: 0 0; transform-origin: 100% 50%; }
+.b1 .pen.big .say::after { left: auto; right: -12px; bottom: 50%; translate: 0 50%; rotate: -45deg; }
+.b1 .btn { position: absolute; z-index: 3; right: var(--lpad); bottom: calc(var(--curve) + 32px); box-shadow: 6px 6px 0 var(--hero-accent); }
+/* What the two kinds are, in six words, right by the way in. Will, Nov 24: first-time visitors "might be confused on what
+   maker is" and why Design and IS, and this is for CMU. */
+.b1 .for { position: absolute !important; z-index: 3 !important; right: var(--lpad); bottom: calc(var(--curve) + 32px + 88px); max-width: 15ch; font: 900 clamp(20px, 1.8vw, 26px) / 1.1 var(--display); text-align: right; text-wrap: balance; }
+/* ---------- 2 what it is ---------- */
+.b2 { --bg: var(--c2-bg); --tone: var(--c2-word); --fg: var(--c2-fg); }
+.b2 .pen { right: 6vw; bottom: calc(var(--curve) * .5); width: clamp(170px, 20vw, 300px); }
+/* QUICK says what a maker is (the big line), then what the quiz is for (the small line). Two levels, so the eye knows the order. */
+.says.sub { max-width: 30ch; margin-top: 16px; font: 600 clamp(17px, 1.5vw, 20px) / 1.4 var(--text); }
+/* ---------- 3 what you get ---------- */
+.b3 { --bg: var(--c3-bg); --tone: var(--c3-word); --fg: var(--c3-fg); }
+/* The bar is the thing to play with here (Will, Nov 23: "make a dragger to fill in the bar to show if designer or info system
+   and this also changes the background a bit"). Drag it and three things answer: the bar fills from the middle, the side you
+   pull toward comes in from its edge as a flat colour, and that side's penguin cheers. */
+.b3 .tug { --h: clamp(36px, 6svh, 52px); width: min(680px, 100%); margin-top: clamp(56px, 9svh, 88px); }
+.b3 .tug-track { box-shadow: 6px 6px 0 var(--ink); }
+.b3 .tug { --name: clamp(24px, 2.5vw, 30px); }
+.b3 .tug-tag { font-size: 20px; }
+/* the two colours wait off each edge. They are flat shapes with a round front, cut to the chapter's own curve. */
+.washes { position: absolute !important; z-index: 0 !important; left: -12%; right: -12%; top: 0; bottom: 0; overflow: hidden; border-radius: 50% 50% 0 0 / var(--curve) var(--curve) 0 0; pointer-events: none; }
+.wash { position: absolute; top: -20%; bottom: -20%; width: 62%; transition: transform 420ms var(--ease-out); }
+.b3.dragging .wash { transition: none; }      /* while the knob is held the colour is under the finger too */
+.wash.d { left: 0; background: var(--lean-design); border-radius: 0 50% 50% 0; transform: translateX(-101%); }
+.wash.s { right: 0; background: var(--lean-is); border-radius: 50% 0 0 50%; transform: translateX(101%); }
+/* each penguin stands for a side. The one you pull toward grows and hops, the other steps back. */
+.b3 .pen img { transform-origin: 50% 100%; transition: scale 300ms var(--ease-out), opacity 300ms var(--ease-out); }
+.b3 .pen.up img { scale: 1.14; } .b3 .pen.down img { scale: .86; opacity: .8; }
+.b3 .pen .say { transition: opacity 200ms var(--ease-out), scale 200ms var(--ease-out); }
+.b3 .pen:not(.talk) .say { opacity: 0; scale: .9; }
+.b3 .says { max-width: 26ch; }
+.b3 .pen.l { left: 4vw; bottom: calc(var(--curve) * .6); width: clamp(120px, 15vw, 230px); }
+.b3 .pen.r { right: 4vw; bottom: calc(var(--curve) * .6); width: clamp(120px, 15vw, 230px); }
+/* ---------- 4 three types ---------- */
+.b4 { --bg: var(--c4-bg); --tone: var(--c4-word); --fg: var(--c4-fg); }
+/* the cards now stand under the word, not on it, so the word is a size smaller here and the chapter still fits one screen */
+.b4 .word { font-size: min(27svh, calc((100vw - 2 * var(--lpad)) / (var(--n) * .5))); }
+.b4 .says { margin-top: clamp(16px, 3svh, 32px); }
+/* Three example cards, clear of the giant word (critique: they covered its lower edge). They are 3D (Will, Nov 24: "the
+   cards can be 3d"): they rest fanned toward each other, and each leans toward the pointer with its word, penguin and tag
+   at different depths and a band of shine across it. Mouse: hover. Touch: press and drag sideways. tilt() in app.js. */
+.deck { display: flex; justify-content: center; gap: clamp(8px, 2vw, 28px); margin-top: clamp(8px, 2svh, 24px); perspective: 1100px; }
+.tcard { --tp: clamp(8px, 1.4vw, 20px); width: clamp(100px, 20vw, 240px); container-type: inline-size; perspective: 700px; touch-action: pan-y; -webkit-user-select: none; user-select: none;
+  transform: translateX(var(--from)) rotate(var(--turn)); transition: transform 420ms var(--ease-out) var(--deal, 100ms); }
+.beat.in .tcard { transform: rotate(var(--rest)) rotateY(var(--ry, 0deg)); }
+.tface { position: relative; padding: var(--tp) var(--tp) calc(var(--tp) + 4px); background: var(--c); border: 4px solid var(--ink); border-radius: clamp(14px, 2vw, 28px); box-shadow: 8px 8px 0 var(--ink); text-align: left;
+  transform-style: preserve-3d; transition: transform var(--base) var(--ease-out); }
+.tcard.live .tface { transition-duration: var(--fast); }
+.tcard.held .tface { transition: none; }
+.tclip { position: absolute; inset: 0; overflow: hidden; border-radius: inherit; pointer-events: none; }
+.tcard.live .glare { opacity: 1; transition: opacity var(--base) ease, transform var(--fast) var(--ease-out); }
+.tcard.held .glare { transition: opacity var(--base) ease; }
+.tface img { display: block; width: 100%; height: auto; transform: translateZ(18px); pointer-events: none; }
+/* Each card reads like the real card (Will, Nov 23: "the bold letters for result page for facilitator all round planner").
+   The way of working is the bold word: paper letters with an ink edge. It is sized from the card, so the longest word
+   always fits, on a phone too. The lean is a small tag under the penguin. */
+.tface em { display: block; margin: 2px 0 0; color: var(--paper); font: 900 calc((100cqi - 2 * var(--tp) - 8px) / 5.5) / .95 var(--display); font-style: normal; letter-spacing: .01em; text-align: center; white-space: nowrap;
+  -webkit-text-stroke: max(3px, .16em) var(--ink); paint-order: stroke fill; text-shadow: max(2px, .08em) max(2px, .08em) 0 var(--ink); transform: translateZ(34px); }
+.tface b { display: block; width: fit-content; max-width: 100%; margin: 0 auto; padding: 4px 8px; border: 3px solid var(--ink); border-radius: 10px; background: var(--paper); font: 900 clamp(12px, 1.5vw, 20px) / 1.1 var(--display); white-space: nowrap; transform: translateZ(26px); }
+/* ---------- 5 the quiz: a dark chapter with the frame in it ---------- */
+/* (justify-items must be reset: browsers now centre and shrink block children too) */
+.beat.b5 { --bg: var(--ink); display: block; justify-items: stretch; min-height: 0; padding: calc(var(--curve) + 8px) 0 0; text-align: left; }
+.b5 .frame { background: var(--ground); }
+.ready { position: relative; z-index: 3; margin: auto 0; padding: 8px var(--pad) 72px; display: grid; grid-template-columns: minmax(0, 1fr); justify-items: center; gap: 16px; text-align: center; }
+.ready .giant { color: var(--accent); }
+/* The tape seals the quiz (Will, Nov 23: "Pull to start should actually have animation draggin left to right like tape
+   wripping out some physics stuff"). It follows the finger one to one. Let go early and it springs back and wobbles.
+   Past a third of the way, or a flick, and it rips: it keeps your hand's speed, speeds up, drops and turns as it leaves.
+   The motion is a small physics loop in app.js writing one transform. Here: the torn ends, and a nudge while it waits. */
+.seal { position: relative; z-index: 2; width: calc(100% + 2 * var(--pad)); margin: 8px calc(var(--pad) * -1) 0; rotate: -3deg; }
+.tape { position: relative; display: flex; align-items: center; justify-content: center; gap: 16px; width: 100%; min-height: 76px; padding: 0 24px; border: 0; border-block: 4px solid var(--ink); color: var(--ink); cursor: grab; touch-action: pan-y;
+  background: repeating-linear-gradient(135deg, var(--tone-2) 0 34px, var(--accent) 34px 68px); font: 900 clamp(26px, 3.4vw, 40px) / 1 var(--display); will-change: transform; }
+.tape.pulling { cursor: grabbing; }
+/* the tear: a stub stays stuck at the left edge, and both torn ends are jagged. The strip's own end is cut by teeth in the page colour. */
+.seal::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: calc(var(--pad) + 24px); border-block: 4px solid var(--ink); background: repeating-linear-gradient(135deg, var(--tone-2) 0 34px, var(--accent) 34px 68px); transform-origin: 0 50%;
+  clip-path: polygon(0 0, 100% 0, 70% 12.5%, 100% 25%, 70% 37.5%, 100% 50%, 70% 62.5%, 100% 75%, 70% 87.5%, 100% 100%, 0 100%); }
+.tape::before { content: ""; position: absolute; left: -1px; top: -5px; bottom: -5px; width: 16px; background: var(--ground);
+  clip-path: polygon(0 0, 100% 0, 0 12.5%, 100% 25%, 0 37.5%, 100% 50%, 0 62.5%, 100% 75%, 0 87.5%, 100% 100%, 0 100%); }
+.seal.torn::before { animation: recoil 420ms var(--ease-out); }
+@keyframes recoil { 0% { transform: translateX(12px) skewY(-3deg); } 45% { transform: translateX(-5px) skewY(2deg); } 75% { transform: translateX(2px); } 100% { transform: none; } }
+/* as it comes on screen it gives itself one small tug, so it reads as something to pull */
+.beat.live .tape:not(.pulling):not(.free) { animation: tease 3.4s var(--ease-out) 1; }
+@keyframes tease { 0%, 80%, 100% { transform: none; } 87% { transform: translateX(18px) rotate(.5deg); } 93% { transform: translateX(-5px) rotate(-.2deg); } 97% { transform: translateX(2px); } }
+.tape > span { padding: 6px 16px; background: var(--paper); border: 4px solid var(--ink); border-radius: 12px; }
+.tape .rider { position: absolute; left: 4%; bottom: 82%; width: clamp(110px, 13vw, 180px); height: auto; pointer-events: none; rotate: 3deg; }
+.quiet { margin-top: 8px; font: 900 clamp(20px, 2.2vw, 28px) / 1.1 var(--display); color: var(--ink); text-wrap: balance; }
+/* each question takes a colour, and the wipe between questions brings the next one in */
+[data-view="result"] .giant { color: var(--q, var(--accent)); }
+
+@media (max-width: 640px) {
+  .bar-top { padding-top: max(10px, env(safe-area-inset-top, 0px)); }
+  .mark { width: 52px; height: 52px; border-radius: 16px; }
+  .go { padding: 12px 16px; font-size: 20px; }
+  .beat { padding-top: 92px; } .beat + .beat { padding-top: calc(92px + var(--curve)); }
+  .says { max-width: 16ch; }
+  /* the penguin is sized so the laptop still fits on the screen, and sits a little left for the same reason */
+  .b1 .pen.big { --p: min(118vw, calc((100svh - 340px) * 1.03)); bottom: calc(var(--curve) + 128px); margin-left: calc(var(--p) * -.57); }
+  .b1 .pen.big .say { right: auto; left: 14%; bottom: 74%; transform-origin: 50% 100%; }
+  .b1 .pen.big .say::after { right: auto; left: 60%; bottom: -12px; translate: 0 0; rotate: 45deg; }
+  .b1 .btn { left: var(--lpad); right: var(--lpad); bottom: calc(var(--curve) + 20px); }
+  .b1 .for { left: var(--lpad); right: var(--lpad); bottom: calc(var(--curve) + 20px + 76px); max-width: none; text-align: center; font-size: 20px; }
+  .says.sub { max-width: 26ch; font-size: 16px; }
+  @media (max-height: 700px) { .b1 .pen.big .say { left: 4%; bottom: 62%; } }
+  @media (max-height: 600px) { .b1 .pen.big .say { bottom: 48%; } }      /* a very short phone: lower, so it does not touch the word */
+  .b1 .cue { display: none; }   /* the button is the way on here */
+  .b2 .pen { right: -4vw; width: 46vw; }
+  .b3 .pen.l { left: -4vw; width: 34vw; } .b3 .pen.r { right: -4vw; width: 34vw; }
+  .deck { margin-top: 8px; gap: 6px; } .tcard { width: 29vw; } .tface { box-shadow: 5px 5px 0 var(--ink); }
+  .tface b { white-space: normal; text-align: center; text-wrap: balance; padding: 3px 6px; }      /* the tag may take two lines so it stays inside a narrow card */
+  .b4 .amb svg:nth-child(3) { --y: 88% !important; }                                                  /* clear of the line under the cards */
+  .amb svg { scale: .7; } .amb svg:nth-child(even) { display: none; }
+  .say { font-size: 18px; }
+  .ready { padding-bottom: 40px; } .tape { min-height: 68px; } .tape .rider { width: 30vw; }
+  .seal { margin-top: 20vw; }   /* room for the penguin on the tape, so it does not stand on the word */
+}
+/* motion turned down, or ?still=1 for screenshots: everything is already in place and nothing drifts */
+.still .word .ch, .still .say { transition: none; transform: none; opacity: 1; scale: 1; }
+.still .tug-car, .still .tug-half b, .still .wash, .still .b3 .pen img { transition: none; animation: none; }
+.still .tcard { transition: none; transform: rotate(var(--rest)) rotateY(var(--ry, 0deg)); }
+.still .amb svg, .still .cue, .still .tape, .still .seal::before { animation: none !important; }
+/* the line under the bar changes length as you drag. It keeps room for its longest form, so nothing else moves. */
+.b3 .says { min-height: 2.2em; margin-top: clamp(20px, 4svh, 36px); }
+@media (max-width: 640px) { .b3 .says { max-width: 20ch; min-height: 2.2em; } .b3 .tug { margin-top: 56px; --name: 24px; } }
+/* On a phone a bubble would sit on the line under the bar (critique, Nov 23), so the penguins react without one: pose, size and hop.
+   On a short or very narrow phone they also stand smaller. */
+@media (max-width: 1000px) { .b3 .pen .say { display: none; } }      /* up to a small laptop: at 800 wide the bubble sat on the bar's names */
+@media (max-width: 640px) and (max-height: 720px), (max-width: 359px) { .b3 .pen.l, .b3 .pen.r { width: 21vw; bottom: calc(var(--curve) * .35); } .b3 .says { font-size: 22px; margin-top: 16px; } }
+/* a still page shows every bubble, so here the one that is not talking is hidden by hand */
+.still .b3 .pen:not(.talk) .say { opacity: 0; }
+/* On a short phone, or a very short window, the QUICK bubble would sit on the words, so the penguin stands there without it. */
+@media (max-width: 640px) and (max-height: 760px), (max-height: 520px) { .b2 .say { display: none; } }
+
+/* ---------- with GSAP running (motion.js): the background is alive all the time, and can be paused ----------
+   Without GSAP, or with reduced motion, the rules above stay in charge: a short drift, then rest. */
+.gsap .amb svg { rotate: none; }                 /* GSAP owns the rotation now */
+.gsap .beat.live .amb svg { animation: none; }
+.gsap .beat.live .cue { animation: nod 1.2s ease-in-out infinite alternate; }
+.gsap.calm .beat.live .cue { animation-play-state: paused; }
+.bob { display: block; }
+/* the pause control: small, plain, bottom right, only over the landing chapters */
+.motion-toggle { position: fixed; z-index: 29; right: max(16px, env(safe-area-inset-right, 0px)); bottom: max(16px, env(safe-area-inset-bottom, 0px)); width: 44px; height: 44px; padding: 0; display: grid; place-items: center;
+  border: 3px solid var(--ink); border-radius: 14px; background: var(--paper); color: var(--ink); box-shadow: 3px 3px 0 var(--ink); cursor: pointer; transition: opacity 200ms var(--ease-out), scale 120ms var(--ease-out), visibility 0s; }
+.motion-toggle svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+.motion-toggle .i-play { display: none; fill: currentColor; stroke-width: 2; } .calm .motion-toggle .i-play { display: inline; } .calm .motion-toggle .i-pause { display: none; }
+.motion-toggle:active { scale: .94; }
+.motion-toggle.away { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 200ms var(--ease-out), visibility 0s 200ms; }
+.motion-toggle:focus-visible { outline: 4px solid var(--ink); outline-offset: 3px; }
+/* the burst behind the result's penguin: thirty small pieces in the penguin's own three colours */
+.burst { position: absolute; left: 50%; top: 45%; width: 0; height: 0; z-index: -1; pointer-events: none; }
+.burst i { position: absolute; left: -9px; top: -4px; width: 18px; height: 8px; border: 2px solid var(--ink); border-radius: 4px; will-change: transform, opacity; }
+.burst i.dot { left: -6px; top: -6px; width: 12px; height: 12px; border-radius: 50%; }
+.burst .paper { background: var(--paper); } .burst .ink { background: var(--ink); } .burst .gold { background: var(--accent); }
+/* the burst sits behind the penguin and in front of the page colour, at every width */
+[data-view="result"] .winner { isolation: isolate; }
+@media (max-width: 1199px) { [data-view="result"] .winner { position: relative; } }
+/* the extra shapes are for wide screens, where the edges are empty. Narrower, the words reach the edges and a shape would sit behind them. */
+@media (max-width: 1000px) { .amb .extra { display: none; } }
+
+/* ---------- more motion (Will, Nov 24: "More motion") ---------- */
+/* the big shapes behind each chapter: no outline, and only a few percent darker than what is under them */
+.amb svg.deep { z-index: -1; fill: var(--ink); stroke: none; opacity: .065; }
+.b1 .amb svg.deep { fill: var(--ink); }
+.b2 .amb svg.deep { opacity: .12; }                                          /* the dark chapter needs a little more to show at all */
+@media (max-width: 640px) { .amb svg.deep { scale: 1; --s: 62vw !important; } }
+/* the tape's stripes sit on their own strip inside the tape, a little longer than it, so they can slide like a barber's pole.
+   One step is one stripe pair along the tape: 68px on the slant is 96.17px across. */
+.tape { background: var(--tone-2); }
+.stripes { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.stripes i { position: absolute; top: 0; bottom: 0; left: -97px; right: 0; background: repeating-linear-gradient(135deg, var(--tone-2) 0 34px, var(--accent) 34px 68px); }
+.tape > span:not(.stripes), .tape .rider { z-index: 1; } .tape > span:not(.stripes) { position: relative; }
+@keyframes slide { to { transform: translateX(96.17px); } }
+.gsap .beat.live .stripes i { animation: slide 2.8s linear infinite; }
+.gsap.calm .stripes i { animation-play-state: paused !important; }
+.tape > .stripes { padding: 0; border: 0; border-radius: 0; background: none; }      /* it is a strip, not a label */
+.tape::before { z-index: 1; }                                                         /* the torn end stays on top of the stripes */
+
+/* ---------- layers (animation review, Nov 24) ----------
+   A layer on the graphics card is asked for only where something is moving, and only while its chapter is on screen.
+   Before this about 70 elements held one all the time, eight of them 430px wide. The giant letters ask for none: GSAP
+   lifts an element while it is tweening it and lets it go after. */
+.beat.live .word, .beat.live .pen, .beat.live .wash, .beat.live .stripes i { will-change: transform; }
+.gsap .beat.live .amb svg, .gsap .beat.live .bob, .gsap .beat.live .tfloat { will-change: transform; }
+.tcard.live .tface { will-change: transform; }

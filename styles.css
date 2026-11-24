@@ -1,0 +1,243 @@
+/* Maker Type. Ink on white, one accent. Every value comes from assets/tokens.css.
+   Layout: one framed screen (the stage) that holds the hero, each question and the result, then plain sections. */
+
+:root {
+  --ink: var(--color-line); --accent: var(--color-accent); --white: var(--color-surface);
+  --display: var(--primitive-font-display); --text: var(--primitive-font-text);
+  --pad: 48px; --stroke: 6px; --drop: 12px;
+  --vp-wide: 1280px;
+}
+* { box-sizing: border-box; }
+html { -webkit-tap-highlight-color: transparent; }      /* no grey flash on tap: every control has its own pressed state */
+html { scroll-behavior: auto; }
+html { color-scheme: light; -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }
+body { margin: 0; background: var(--color-canvas); color: var(--color-text); font: 400 16px/1.5 var(--text); }
+/* controls are not text: no selecting a label on a long press, no double-tap delay */
+button, .btn, .answer, .textbtn { -webkit-user-select: none; user-select: none; touch-action: manipulation; }
+a.btn { -webkit-touch-callout: none; }
+.textbtn:active { opacity: .6; }
+img { display: block; max-width: 100%; height: auto; }
+h2, h3, p { margin: 0; }
+h2 { font: 900 48px/1.1 var(--display); }
+h3 { font: 900 32px/1.1 var(--display); }
+a { color: inherit; }
+[hidden] { display: none !important; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* one focus ring everywhere */
+:focus-visible { outline: 4px solid var(--ink); outline-offset: 3px; border-radius: 8px; }
+/* the ring is ink with a white gap. Orange on white measures 2.9 to 1, under the 3 to 1 a focus ring needs. */
+.btn:focus-visible { box-shadow: 0 0 0 3px var(--white), 6px 6px 0 var(--accent); }
+/* headings take focus only so a screen reader reads the new step. They are not controls, so no ring. */
+[tabindex="-1"]:focus, [tabindex="-1"]:focus-visible { outline: none; }
+.skip { position: absolute; left: 16px; top: -80px; z-index: 20; padding: 12px 16px; background: var(--ink); color: #fff; border-radius: 12px; font-weight: 600; }
+.skip:focus { top: 16px; }
+
+/* ---------- buttons ---------- */
+.btn { display: inline-grid; place-items: center; min-height: 64px; padding: 0 32px; border: 4px solid var(--ink); border-radius: 16px; background: var(--ink); color: #fff;
+  font: 900 28px/1.1 var(--display); text-decoration: none; cursor: pointer; box-shadow: 6px 6px 0 var(--accent); -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.btn.light { background: var(--white); color: var(--ink); box-shadow: none; }
+.textbtn { min-height: 48px; padding: 0 8px; border: 0; background: none; color: inherit; font: 600 16px/1.5 var(--text); text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
+.btn, .answer { transition: scale var(--fast) var(--ease-out), translate var(--fast) var(--ease-out), background-color var(--fast) ease; }
+@media (hover: hover) and (pointer: fine) { .btn:hover { translate: -1px -1px; } .view:not(.fresh) .answer:hover { background: color-mix(in srgb, var(--accent) 25%, var(--paper)); } }
+.btn:active, .answer:active { scale: .97; }
+
+/* ---------- the stage ---------- */
+/* The stage is one screen tall (capped, so a very tall window does not stretch it) and grows if the words need more room.
+   Its padding keeps clear of a notch or a home bar. */
+.screen { --gut: 16px; --stage: max(620px, min(100svh, 1040px)); display: flex; min-height: var(--stage);
+  padding: max(var(--gut), env(safe-area-inset-top, 0px)) max(var(--gut), env(safe-area-inset-right, 0px)) max(var(--gut), env(safe-area-inset-bottom, 0px)) max(var(--gut), env(safe-area-inset-left, 0px)); }
+.frame { position: relative; flex: 1; min-width: 0; display: flex; flex-direction: column; background: var(--white); border: 4px solid var(--ink); border-radius: 32px; overflow: hidden; }
+.top { position: relative; z-index: 6; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 20px 32px 0; min-height: 68px; }
+.step { display: flex; align-items: center; gap: 12px; font-weight: 600; white-space: nowrap; }
+.step i { display: block; width: 160px; height: 12px; border: 3px solid var(--ink); border-radius: 999px; overflow: hidden; background: var(--white); }
+.step i b { display: block; height: 100%; background: var(--ink); transform-origin: left; transform: scaleX(.11); transition: transform var(--base) var(--ease-out); }
+.view { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; }
+
+.giant { position: relative; z-index: 1; margin: 0; text-align: center; white-space: nowrap; color: var(--accent);
+  font: 900 min(400px, 40svh, calc((100vw - 2 * var(--pad) - 32px) / (var(--n) * 0.47)))/.9 var(--display);
+  -webkit-text-stroke: var(--stroke) var(--ink); text-shadow: var(--drop) var(--drop) 0 var(--ink); }
+
+.bubble { position: absolute; z-index: 4; padding: 8px 16px; background: var(--white); border: 4px solid var(--ink); border-radius: 16px; font: 900 24px/1.1 var(--display); white-space: nowrap; }
+.bubble::after { content: ""; position: absolute; left: 50%; bottom: -12px; width: 16px; height: 16px; background: var(--white); border-right: 4px solid var(--ink); border-bottom: 4px solid var(--ink); rotate: 45deg; translate: -50% 0; }
+
+/* ---------- hero ---------- */
+[data-view="hero"] .pre { margin: 12px 0 0 var(--pad); font: 900 64px/1.1 var(--display); position: relative; z-index: 3; }
+[data-view="hero"] .giant { margin-top: 8px; }
+.actions { position: absolute; z-index: 5; right: var(--pad); bottom: var(--pad); display: grid; gap: 4px; justify-items: end; }
+
+/* ---------- a question, and the slider ---------- */
+.ask { position: relative; z-index: 3; margin: auto 0; padding: 24px var(--pad) 96px; display: grid; justify-items: center; gap: 24px; text-align: center; }
+.ask h2 { max-width: 22ch; }
+.answers { display: grid; grid-template-columns: repeat(2, minmax(0, 400px)); gap: 24px; width: 100%; justify-content: center; }
+.answer { display: grid; place-items: center; overflow-wrap: anywhere; min-height: 96px; padding: 16px 24px; background: var(--white); color: var(--ink); border: 4px solid var(--ink); border-radius: 16px;
+  font: 900 28px/1.1 var(--display); text-align: center; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.answer[aria-pressed="true"] { background: var(--accent); }
+.hint { font-size: 14px; color: var(--color-text-quiet); }
+.host { position: absolute; z-index: 2; right: -8px; bottom: -72px; pointer-events: none; }
+.host.away { visibility: hidden; }
+.host .bubble { right: 56px; bottom: 300px; }
+/* the Builder is the short one, so it stands a little higher in the corner */
+.host[data-who="builder"] { bottom: -16px; } .host[data-who="builder"] .bubble { bottom: 252px; }
+
+/* ---------- the result ---------- */
+.winner { position: absolute; z-index: 2; left: 50%; bottom: 72px; translate: -50% 0; pointer-events: none; }
+.lean { position: absolute; z-index: 3; left: var(--pad); bottom: var(--pad); display: grid; gap: 12px; width: min(400px, calc(50vw - 290px)); }
+.lean h2 { text-wrap: balance; }
+
+/* ---------- sections under the stage ---------- */
+.wrap { width: 100%; max-width: var(--vp-wide); margin-inline: auto; padding: 64px max(32px, env(safe-area-inset-right, 0px)) 0 max(32px, env(safe-area-inset-left, 0px)); }
+
+/* ---------- under the result: a bento ----------
+   Tiles of different sizes, one short line each. The eight answers use the same three fills as the bar above. */
+.more h2 { max-width: 22ch; font-size: 56px; text-wrap: balance; }
+.more-sub { margin-top: 12px; max-width: 52ch; font-size: 20px; color: var(--color-text-quiet); }
+.bento { margin-top: 40px; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 24px; }
+.tile { position: relative; overflow: hidden; background: var(--white); border: 4px solid var(--ink); border-radius: 32px; padding: 32px; }
+.tile h3 { font-size: 40px; text-wrap: balance; }
+.tile h3, .tile p, .more h2, .ask h2, .lean h2 { overflow-wrap: anywhere; }
+.tile p { margin-top: 8px; font-size: 20px; font-weight: 600; }
+.tile > img { position: absolute; pointer-events: none; max-width: none; }
+
+.recap { grid-column: 1 / -1; }
+
+.next { grid-column: span 7; min-height: 340px; background: var(--accent); box-shadow: 8px 8px 0 var(--ink); }
+.next h3, .next p { position: relative; }
+.sure-tile::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(135deg, rgb(255 255 255 / .22) 0 2px, transparent 2px 10px);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0, transparent 56%); mask-image: linear-gradient(to bottom, #000 0, transparent 56%); }
+.sure-tile p { position: relative; }
+.next h3, .next p { max-width: calc(100% - 250px); }
+.next > img { right: -24px; bottom: -44px; width: 320px; }
+
+.card-tile { grid-column: span 5; grid-row: span 2; display: grid; justify-items: center; align-content: start; gap: 24px; background: var(--color-canvas); }
+.card-tile h3 { justify-self: start; }
+/* A card you can tilt. Layers sit at different depths, so the word and the penguin stand off the card.
+   .held = the card is following the pointer, so no transition. Without it, a transition settles the card. */
+.holo { width: 270px; height: 480px; margin: 16px 0 8px; perspective: 900px; touch-action: pan-y; -webkit-user-select: none; user-select: none; }
+.holo-card { position: relative; display: block; width: 100%; height: 100%; background: var(--white); border: 4px solid var(--ink); border-radius: 24px; box-shadow: 10px 10px 0 var(--ink);
+  transform-style: preserve-3d; transform: rotateX(8deg) rotateY(-16deg) rotate(-2deg); transition: transform var(--slow) var(--ease-out); }
+.holo.live .holo-card { transition-duration: var(--fast); }
+.holo.held .holo-card { transition: none; }
+.holo-card > * { position: absolute; }
+.h-clip { inset: 0; overflow: hidden; border-radius: 20px; }
+
+/* the shine: one soft band of light that slides as the card turns */
+.glare { position: absolute; inset: -60%; background: linear-gradient(115deg, transparent 34%, rgb(255 255 255 / .35) 45%, rgb(255 255 255 / .95) 50%, rgb(255 255 255 / .35) 55%, transparent 66%); opacity: 0; transition: opacity var(--base) ease, transform var(--slow) var(--ease-out); }
+.holo.live .glare { opacity: 1; transition: opacity var(--base) ease, transform var(--fast) var(--ease-out); }
+.holo.held .glare { transition: opacity var(--base) ease; }
+.h-pre { left: 20px; top: 46px; font: 900 28px/1 var(--display); transform: translateZ(12px); }
+.h-word { left: 0; right: 0; top: 78px; text-align: center; white-space: nowrap; color: var(--accent); font: 900 calc(232px / (var(--n) * .47)) / .9 var(--display);
+  -webkit-text-stroke: 3px var(--ink); text-shadow: 5px 5px 0 var(--ink); transform: translateZ(36px); }
+.h-pen { left: 50%; top: 146px; width: 236px; height: auto; margin-left: -118px; max-width: none; transform: translateZ(56px); pointer-events: none; }
+.h-ask { left: 20px; bottom: 20px; width: 128px; font: 900 20px/1.05 var(--display); transform: translateZ(12px); }
+.h-qr { right: 20px; bottom: 20px; width: 76px; height: 76px; padding: 4px; background: var(--white); border: 3px solid var(--ink); border-radius: 10px; image-rendering: pixelated; transform: translateZ(12px); }
+.card-tile .btn { margin-top: 8px; }
+
+.other { grid-column: span 4; min-height: 300px; padding-bottom: 150px; }
+.other > img { right: -28px; bottom: -40px; width: 210px; }
+.sure-tile { grid-column: span 3; display: grid; align-content: end; background: var(--ink); color: var(--white); }
+.sure-tile p { margin: 0; font: 900 32px/1.1 var(--display); }
+.honest { margin-top: 24px; max-width: 60ch; font-size: 16px; color: var(--color-text-quiet); }
+
+@media (max-width: 1023px) {
+  .next, .card-tile { grid-column: 1 / -1; grid-row: auto; }
+  .other { grid-column: span 7; } .sure-tile { grid-column: span 5; }
+}
+@media (max-width: 640px) {
+  .more h2 { font-size: 36px; }
+  .more-sub { font-size: 18px; }
+  .bento { margin-top: 24px; gap: 16px; }
+  .tile { grid-column: 1 / -1 !important; padding: 24px; border-radius: 24px; }
+  .tile h3 { font-size: 32px; }
+  .tile p { font-size: 18px; }
+  .next { min-height: 0; padding-bottom: 190px; }
+  .next h3, .next p { max-width: none; }
+  .next > img { width: 240px; right: -16px; bottom: -36px; }
+  .other { min-height: 0; padding-bottom: 140px; }
+  .sure-tile p { font-size: 28px; }
+}
+.foot { padding-block: 48px; color: var(--color-text-quiet); font-size: 14px; }
+
+dialog { border: 4px solid var(--ink); border-radius: 32px; padding: 32px; max-width: min(480px, calc(100vw - 32px)); color: var(--ink); }
+dialog::backdrop { background: rgb(17 17 17 / .6); }
+dialog p { margin: 8px 0 24px; }
+.dialog-actions { display: flex; flex-wrap: wrap; gap: 16px; }
+.dialog-actions .btn { min-height: 56px; font-size: 24px; padding: 0 24px; }
+.status { position: fixed; z-index: 30; left: 50%; bottom: 24px; translate: -50% 0; margin: 0; padding: 12px 20px; background: var(--ink); color: #fff; border-radius: 12px; font-weight: 600; }
+.status:empty { display: none; }
+.nojs { margin: 16px; padding: 16px; border: 4px solid var(--ink); border-radius: 16px; background: var(--white); font-weight: 600; }
+
+/* Below 1200 wide the result stacks: word, penguin, line and bar, buttons. Nothing is pinned, so long words make
+   the stage taller and never land on the penguin. The penguin is sized from the screen height to keep it on one screen. */
+@media (max-width: 1199px) {
+  [data-view="result"] .winner { position: static; translate: none; flex: 1; display: grid; place-items: center; padding: 8px 0; }
+  [data-view="result"] .winner img { width: auto; height: clamp(180px, 34svh, 360px); max-width: 78%; }
+  [data-view="result"] .lean { position: static; width: auto; padding: 0 var(--pad); }
+  [data-view="result"] .actions { position: static; padding: 16px var(--pad) var(--pad); justify-items: stretch; }
+  [data-view="result"] .view.reveal .winner { animation-name: rise-far; }
+}
+
+/* ---------- medium ---------- */
+@media (max-width: 1023px) {
+  .host img { width: 240px; } .host .bubble { right: 40px; bottom: 244px; }
+  .host[data-who="builder"] .bubble { bottom: 204px; }
+}
+
+/* ---------- narrow ---------- */
+@media (max-width: 640px) {
+  :root { --pad: 20px; --stroke: 3px; --drop: 6px; }
+  h2 { font-size: 32px; } h3 { font-size: 28px; }
+  .screen { --gut: 8px; }
+  .frame { border-radius: 24px; }
+  .top { padding: 12px 20px 0; min-height: 60px; }
+  .step { gap: 8px; } .step i { width: 48px; } .step .textbtn { padding: 0 4px; }
+  .btn { padding: 0 16px; font-size: 26px; }
+  .bubble { font-size: 20px; padding: 6px 12px; }
+  [data-view="hero"] .pre { font-size: 36px; margin-top: 16px; }
+  .actions { left: var(--pad); right: var(--pad); bottom: var(--pad); justify-items: stretch; }
+  .ask { margin: 0; padding: 16px var(--pad) 24px; justify-items: stretch; text-align: left; gap: 16px; }
+  .answers { grid-template-columns: 1fr; gap: 12px; }
+  .answer { min-height: 72px; font-size: 24px; place-items: center start; text-align: left; }
+  .hint { display: none; }
+  .host { right: -36px; bottom: -56px; } .host img { width: 190px; max-width: none; } .host .bubble { right: 56px; bottom: 196px; }
+  .host[data-who="builder"] { bottom: -20px; } .host[data-who="builder"] .bubble { bottom: 164px; }
+  .lean { gap: 8px; }
+  /* a very narrow phone: the counter stays, the little bar goes */
+  .wrap { padding: 48px max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px)); }
+}
+/* short screens: keep the question and its answers on screen */
+@media (max-height: 700px) { .ask { padding-bottom: 32px; gap: 16px; } .host { display: none; } }
+
+/* ---------- motion ----------
+   Transform and opacity only. Three durations and one curve, all from tokens.css.
+   Motion plays when you move forward by tap. Going back and keyboard answers swap at once. */
+:root { --ease-out: var(--primitive-ease-out); --fast: var(--primitive-duration-fast); --base: var(--primitive-duration-base); --slow: var(--primitive-duration-slow); }
+@keyframes rise { from { opacity: 0; translate: 0 12px; } }
+@keyframes drop { from { opacity: 0; scale: .94; translate: 0 -16px; } }
+@keyframes fade { from { opacity: 0; } }
+@keyframes up { from { opacity: 0; translate: -50% 48px; } }
+@keyframes rise-far { from { opacity: 0; translate: 0 48px; } }
+
+.wipe { position: absolute; z-index: 9; border-radius: 50%; background: var(--accent); pointer-events: none; will-change: transform, opacity; }
+.bubble { transform-origin: 50% 100%; }
+
+/* A new step arriving without the wipe (the first statement, or motion turned down): one plain fade.
+   After a tap the wipe is the transition, so nothing else moves. Sixteen of these in a row have to be quick. */
+.view.enter .ask { animation: fade var(--base) ease both; }
+
+/* the result */
+.view.reveal .giant { animation: drop var(--slow) var(--ease-out) both; }
+.view.reveal .winner { animation: up var(--slow) var(--ease-out) 160ms both; }
+.view.reveal .lean h2, .view.reveal .lean .note { animation: rise var(--base) var(--ease-out) 360ms both; }
+.view.reveal .actions { animation: rise var(--base) var(--ease-out) 360ms both; }      /* with the line, not after everything else: a stagger must not hold the buttons back */
+
+/* motion turned down: the same moments, as fades only */
+@media (prefers-reduced-motion: reduce) {
+  .view.enter *, .view.reveal * { animation-name: fade !important; animation-delay: 0ms !important; }
+  .btn, .answer { transition: background-color var(--fast) ease; }
+  .btn:active, .answer:active { scale: 1; }
+  .step i b { transition: none; }
+  .holo-card, .glare { transition: none; }
+}
+
+@media (max-width: 359px) { .step i { display: none; } }

@@ -1,0 +1,98 @@
+/* Design Tokens - Auto-generated */
+/* Do not edit directly - modify tokens.json instead */
+
+/* === PRIMITIVES === */
+:root {
+  --primitive-color-ink: #111111;
+  --primitive-color-white: #FFFFFF;
+  --primitive-color-ground: #F3F3F0;
+  --primitive-color-accent: #FF6A13;
+  --primitive-color-accent-tint: #FFE5D6;
+  --primitive-color-accent-shade: #BE4600;
+  --primitive-color-grey: #5C5C57;
+  --primitive-color-red: #B3261E;
+  --primitive-space-4: 4px;
+  --primitive-space-8: 8px;
+  --primitive-space-12: 12px;
+  --primitive-space-16: 16px;
+  --primitive-space-24: 24px;
+  --primitive-space-32: 32px;
+  --primitive-space-48: 48px;
+  --primitive-space-64: 64px;
+  --primitive-space-96: 96px;
+  --primitive-space-128: 128px;
+  --primitive-size-giant: clamp(120px, 31vw, 400px);
+  --primitive-size-h1: 64px;
+  --primitive-size-h2: 48px;
+  --primitive-size-h3: 32px;
+  --primitive-size-body: 16px;
+  --primitive-size-small: 14px;
+  --primitive-size-meta: 12px;
+  --primitive-leading-giant: 0.9;
+  --primitive-leading-heading: 1.1;
+  --primitive-leading-body: 1.5;
+  --primitive-radius-control: 16px;
+  --primitive-radius-card: 32px;
+  --primitive-radius-pill: 999px;
+  --primitive-line-thin: 2px;
+  --primitive-line-bold: 4px;
+  --primitive-shadow-hard: 6px 6px 0;
+  --primitive-duration-fast: 120ms;
+  --primitive-duration-base: 200ms;
+  --primitive-duration-slow: 480ms;
+  --primitive-ease-out: cubic-bezier(.23,1,.32,1);   /* the strong ease-out: entrances land crisply (animation review, Nov 24) */
+  --primitive-font-display: 'Londrina Solid', 'Avenir Next Condensed', 'Roboto Condensed', 'Arial Narrow', Impact, sans-serif;
+  --primitive-font-text: 'Bricolage Grotesque', system-ui, sans-serif;
+  --primitive-weight-regular: 400;
+  --primitive-weight-strong: 600;
+  --primitive-weight-display: 900;
+  --primitive-target-min: 48px;
+  --primitive-measure-prose: 68ch;
+}
+
+/* === SEMANTIC === */
+:root {
+  --color-canvas: #F3F3F0;
+  --color-surface: #FFFFFF;
+  --color-surface-inverse: #111111;
+  --color-text: #111111;
+  --color-text-quiet: #5C5C57;
+  --color-text-inverse: #FFFFFF;
+  --color-text-accent: #BE4600;
+  --color-line: #111111;
+  --color-accent: #FF6A13;
+  --color-accent-soft: #FFE5D6;
+  --color-side-design: #FF6A13;
+  --color-side-is: #111111;
+  --color-focus: #111111;
+  --color-focus-inverse: #FF6A13;
+  --color-error: #B3261E;
+}
+
+/* === COMPONENTS === */
+:root {
+  --button-bg: #111111;
+  --button-fg: #FFFFFF;
+  --button-shadow: #FF6A13;
+  --button-height: 64px;
+  --button-radius: 16px;
+  --button-press-scale: 0.97;
+  --answer-bg: #FFFFFF;
+  --answer-fg: #111111;
+  --answer-line: #111111;
+  --answer-bg-hover: #FFE5D6;
+  --answer-bg-chosen: #FF6A13;
+  --answer-min-height: 72px;
+  --answer-radius: 16px;
+  --card-bg: #FFFFFF;
+  --card-line: #111111;
+  --card-radius: 32px;
+  --card-pad: 32px;
+  --bubble-bg: #FFFFFF;
+  --bubble-fg: #111111;
+  --bubble-line: #111111;
+  --bubble-radius: 16px;
+  --splitbar-design: #FF6A13;
+  --splitbar-is: #111111;
+  --splitbar-height: 24px;
+}
