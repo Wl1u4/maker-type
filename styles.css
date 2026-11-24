@@ -91,7 +91,6 @@ a { color: inherit; }
 /* ---------- under the result: a bento ----------
    Tiles of different sizes, one short line each. The eight answers use the same three fills as the bar above. */
 .more h2 { max-width: 22ch; font-size: 56px; text-wrap: balance; }
-.more-sub { margin-top: 12px; max-width: 52ch; font-size: 20px; color: var(--color-text-quiet); }
 .bento { margin-top: 40px; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 24px; }
 .tile { position: relative; overflow: hidden; background: var(--white); border: 4px solid var(--ink); border-radius: 32px; padding: 32px; }
 .tile h3 { font-size: 40px; text-wrap: balance; }
@@ -113,12 +112,31 @@ a { color: inherit; }
 .card-tile h3 { justify-self: start; }
 /* A card you can tilt. Layers sit at different depths, so the word and the penguin stand off the card.
    .held = the card is following the pointer, so no transition. Without it, a transition settles the card. */
-.holo { width: 270px; height: 480px; margin: 16px 0 8px; perspective: 900px; touch-action: pan-y; -webkit-user-select: none; user-select: none; }
-.holo-card { position: relative; display: block; width: 100%; height: 100%; background: var(--white); border: 4px solid var(--ink); border-radius: 24px; box-shadow: 10px 10px 0 var(--ink);
+.holo { display: block; width: 270px; height: 480px; margin: 16px 0 8px; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; appearance: none; -webkit-appearance: none;
+  perspective: 900px; touch-action: pan-y; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+.holo:focus-visible { border-radius: 24px; outline-offset: 14px; }
+/* Three layers: .holo-card leans toward the pointer, .h-flip turns over on a press, and the two faces sit back to back on it. */
+.holo-card { position: relative; display: block; width: 100%; height: 100%;
   transform-style: preserve-3d; transform: rotateX(8deg) rotateY(-16deg) rotate(-2deg); transition: transform var(--slow) var(--ease-out); }
 .holo.live .holo-card { transition-duration: var(--fast); }
 .holo.held .holo-card { transition: none; }
-.holo-card > * { position: absolute; }
+.h-flip { position: absolute; inset: 0; display: block; transform-style: preserve-3d; transition: transform 520ms cubic-bezier(.77,0,.175,1); }
+.holo.flipped .h-flip { transform: rotateY(180deg); }
+.h-front, .h-back { position: absolute; inset: 0; display: block; background: var(--white); border: 4px solid var(--ink); border-radius: 24px; box-shadow: 10px 10px 0 var(--ink);
+  transform-style: preserve-3d; -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+.h-front > * { position: absolute; -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+/* The back: what the card means. The way of working first and biggest, then the lean. */
+.h-back { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; padding: 26px 20px 22px; background: var(--paper); transform: rotateY(180deg); }
+.h-back > * { transform: translateZ(12px); -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+.h-back > *, .tback > * { max-width: 100%; overflow-wrap: anywhere; }
+.hb-name { padding: 6px 10px; border: 3px solid var(--ink); border-radius: 12px; background: var(--role, var(--ground)); font: 900 calc(22px * var(--k, 1)) / 1 var(--display); }
+.hb-read { font: 900 calc(34px * var(--k, 1)) / 1.02 var(--display); text-wrap: balance; }
+.hb-lean { margin-top: auto; padding: 6px 8px; border: 3px solid var(--ink); border-radius: 12px; background: var(--lean, var(--paper)); font: 900 calc(18px * var(--k, 1)) / 1.05 var(--display); }
+.hb-sub { font: 500 calc(16px * var(--k, 1)) / 1.35 var(--text); }
+/* the tag that says the card turns. Same hand as "Drag me" on the bar. It goes once a card has been turned. */
+.flipme { right: -14px; top: -16px; padding: 4px 8px; border: 3px solid var(--ink); border-radius: 10px; background: var(--paper); color: var(--ink); font: 900 18px/1.1 var(--display); font-style: normal; white-space: nowrap;
+  rotate: 6deg; transform: translateZ(40px); transition: opacity 200ms var(--ease-out); pointer-events: none; }
+.used .flipme { opacity: 0; }
 .h-clip { inset: 0; overflow: hidden; border-radius: 20px; }
 
 /* the shine: one soft band of light that slides as the card turns */
@@ -137,7 +155,6 @@ a { color: inherit; }
 .other > img { right: -28px; bottom: -40px; width: 210px; }
 .sure-tile { grid-column: span 3; display: grid; align-content: end; background: var(--ink); color: var(--white); }
 .sure-tile p { margin: 0; font: 900 32px/1.1 var(--display); }
-.honest { margin-top: 24px; max-width: 60ch; font-size: 16px; color: var(--color-text-quiet); }
 
 @media (max-width: 1023px) {
   .next, .card-tile { grid-column: 1 / -1; grid-row: auto; }
@@ -145,7 +162,6 @@ a { color: inherit; }
 }
 @media (max-width: 640px) {
   .more h2 { font-size: 36px; }
-  .more-sub { font-size: 18px; }
   .bento { margin-top: 24px; gap: 16px; }
   .tile { grid-column: 1 / -1 !important; padding: 24px; border-radius: 24px; }
   .tile h3 { font-size: 32px; }
@@ -237,7 +253,7 @@ dialog p { margin: 8px 0 24px; }
   .btn, .answer { transition: background-color var(--fast) ease; }
   .btn:active, .answer:active { scale: 1; }
   .step i b { transition: none; }
-  .holo-card, .glare { transition: none; }
+  .holo-card, .glare, .h-flip, .tflip { transition: none; }
 }
 
 @media (max-width: 359px) { .step i { display: none; } }

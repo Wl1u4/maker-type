@@ -314,8 +314,8 @@
     const saidHTML = `<dl aria-hidden="true"><div><dt>${esc(m['pick.said'])}</dt><dd>${esc(said)}</dd></div><div><dt>${esc(m['pick.answers'])}</dt><dd>${esc(sc.lean === 'between' ? m['bar.between'] : L.field)}</dd></div></dl>`;
     more.style.setProperty('--lean', leanTone(sc.lean)); more.style.setProperty('--role', roleTone(sc.role));
     $('more-h').textContent = flat ? m['why.same'] : R.read;
-    $('more-sub').textContent = flat ? '' : L.read;
-    $('more-honest').textContent = m['result.honest'];
+    // Will, Nov 24: the line about the lean and the "quick quiz, not a placement test" line are off the page. The lean line is on
+    // the back of the card, and the honest line is on the printed sheet. The promise before the first statement is on QUICK.
     $('more-body').innerHTML = `
       <article class="tile sums">
         <h3>${esc(m['result.answers'])}</h3>
@@ -325,16 +325,25 @@
       </article>
       <article class="tile card-tile">
         <h3>${esc(m['result.card'])}</h3>
-        <div class="holo" id="holo">
-          <div class="holo-card" role="img" aria-label="Your card. ${esc(line)}">
-            <span class="h-clip"><i class="glare"></i></span>
-            <span class="h-pre">I'm ${esc(R.a)}</span>
-            <span class="h-word" style="--n: ${R.word.length}">${esc(R.word)}</span>
-            <img class="h-pen" src="${PENS}/${who}-cheer.svg" alt="" width="230" height="235" loading="lazy">
-            <span class="h-ask">${esc(words.lean)}</span>
-            <img class="h-qr" src="share/qr.svg" alt="" width="72" height="72" loading="lazy">
-          </div>
-        </div>
+        <button type="button" class="holo" id="holo">
+          <span class="holo-card"><span class="h-flip">
+            <span class="h-front">
+              <span class="h-clip"><i class="glare"></i></span>
+              <span class="h-pre">I'm ${esc(R.a)}</span>
+              <span class="h-word" style="--n: ${R.word.length}">${esc(R.word)}</span>
+              <img class="h-pen" src="${PENS}/${who}-cheer.svg" alt="" width="230" height="235" loading="lazy">
+              <span class="h-ask">${esc(words.lean)}</span>
+              <img class="h-qr" src="share/qr.svg" alt="" width="72" height="72" loading="lazy">
+              <i class="flipme">${esc(m['card.flip'])}</i>
+            </span>
+            <span class="h-back">
+              <span class="hb-name">${esc(R.name)}</span>
+              <span class="hb-read">${esc(R.read)}</span>
+              <span class="hb-lean">${esc(words.lean)}</span>
+              <span class="hb-sub">${esc(flat ? m['why.same'] : L.read)}</span>
+            </span>
+          </span></span>
+        </button>
         <div class="saves">
           <a class="btn light" href="${image}" download="maker-type.png">${esc(m['result.save'])}</a>
           <button type="button" class="btn light" id="pdf">${esc(m['result.pdf'])}</button>
@@ -369,6 +378,27 @@
       <p class="sh-foot">${esc(fill(m['sheet.made'], { date }))}</p>`;
     window.tug.set(sheet.querySelector('.tug'), where);
     tilt($('holo'), 18, true);
+    flip($('holo'), `${m['result.card']}. ${line}`, `${R.name}. ${R.read} ${flat ? m['why.same'] : L.read}`);
+    fitBack($('holo').querySelector('.h-back'));
+  }
+
+  // ---------- cards that turn over ----------
+  // Will, Nov 24: "if i press it i can view the back and the description of what the card entails". A press, a tap, Enter or
+  // Space turns the card. The turn sits on an inner layer, so the lean toward the pointer (tilt, below) goes on working.
+  // The card is a button, and its name is whichever face is showing. The "Flip me" tag goes once a card has been turned.
+  function flip(wrap, front, back) {
+    if (!wrap || wrap.dataset.flip) return;
+    wrap.dataset.flip = '1';
+    const name = () => wrap.setAttribute('aria-label', `${wrap.classList.contains('flipped') ? back : front} ${m['card.turn']}`);
+    name();
+    wrap.addEventListener('click', () => { wrap.classList.toggle('flipped'); (wrap.closest('.deck') || wrap).classList.add('used'); name(); });
+  }
+  // A back holds sentences, and a card is a fixed size. If the words are too many (a long name, a narrow phone), they step down
+  // in size until they fit. --k scales every size on the back.
+  function fitBack(el) {
+    if (!el) return;
+    let k = 1; el.style.setProperty('--k', k);
+    while (k > .5 && (el.scrollHeight > el.clientHeight + 1 || el.scrollWidth > el.clientWidth + 1)) { k -= .06; el.style.setProperty('--k', k.toFixed(2)); }
   }
 
   // ---------- cards that tilt ----------
@@ -490,5 +520,14 @@
   // the landing's buttons call this: go to the quiz, at the first unanswered step
   // the three example cards on the RESULT chapter lean toward the pointer, like the card you get
   document.querySelectorAll('.tcard').forEach((c) => tilt(c, 16, true));
+  document.querySelectorAll('.tcard').forEach((c) => {
+    const r = Q.roles[c.dataset.role], tag = c.querySelector('.flipme');
+    c.querySelector('.tback strong').textContent = r.name; c.querySelector('.tread').textContent = r.read;
+    if (tag) tag.textContent = m['card.flip'];
+    flip(c, `${m['card.example']} ${c.dataset.front}`, `${r.name}. ${r.read}`);
+  });
+  { const backs = () => document.querySelectorAll('.tback, .h-back').forEach(fitBack); let t = 0;
+    backs(); if (document.fonts && document.fonts.ready) document.fonts.ready.then(backs);
+    addEventListener('resize', () => { clearTimeout(t); t = setTimeout(backs, 150); }); }
   window.MT = { begin: () => go(resume(), undefined, 'forward') };
 })();

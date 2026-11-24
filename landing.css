@@ -85,6 +85,16 @@ body { background: var(--ground); overflow-x: clip; }
   .b1 .pen.big { --p: min(72svh, 46vw, calc((79svh - var(--curve) - clamp(84px, 11svh, 104px) - 10px) / .71)); margin-left: calc(var(--p) * -.78); }
   .b1 .amb svg:nth-child(2) { display: none; }                                  /* it sat behind the question mark */
 }
+/* Will, Nov 24: "I wonder if the two minute quiz button can be below center aligned under maker?" So on a laptop the first
+   screen is now the phone's arrangement: the word, the dog, the line and the button, all on the centre line. The dog gives
+   up the height the button needs (about a fifth on a 900 tall window). A window under 620 tall has no room for that stack,
+   so there the button stays at the right, as before. */
+@media (min-width: 641px) and (min-height: 620px) {
+  .beat.b1 .pen.big { --p: min(72svh, 56vw, calc((79svh - var(--curve) - clamp(84px, 11svh, 104px) - 10px - 124px) / .71)); bottom: calc(var(--curve) + 124px); margin-left: calc(var(--p) * -.57); }
+  .beat.b1 .btn { left: var(--lpad); right: var(--lpad); bottom: calc(var(--curve) + 24px); width: fit-content; margin-inline: auto; }
+  .beat.b1 .for { left: var(--lpad); right: var(--lpad); bottom: calc(var(--curve) + 24px + 78px); max-width: none; text-align: center; }
+  .beat.b1 .cue { display: none; }      /* the button is the way on, as on a phone */
+}
 /* A tablet held upright: the phone's arrangement. A big penguin in the middle, the line and the button centred under it. */
 @media (min-width: 641px) and (max-width: 1000px) and (orientation: portrait) {
   .beat.b1 .pen.big { --p: min(100vw, calc((100svh - 420px) * 1.03)); bottom: calc(var(--curve) + 136px); margin-left: calc(var(--p) * -.57); }
@@ -139,8 +149,22 @@ body { background: var(--ground); overflow-x: clip; }
 .tcard { --tp: clamp(8px, 1.4vw, 20px); width: clamp(100px, 20vw, 240px); container-type: inline-size; perspective: 700px; touch-action: pan-y; -webkit-user-select: none; user-select: none;
   transform: translateX(var(--from)) rotate(var(--turn)); transition: transform 420ms var(--ease-out) var(--deal, 100ms); }
 .beat.in .tcard { transform: rotate(var(--rest)) rotateY(var(--ry, 0deg)); }
-.tface { position: relative; padding: var(--tp) var(--tp) calc(var(--tp) + 4px); background: var(--c); border: 4px solid var(--ink); border-radius: clamp(14px, 2vw, 28px); box-shadow: 8px 8px 0 var(--ink); text-align: left;
-  transform-style: preserve-3d; transition: transform var(--base) var(--ease-out); }
+/* Each one turns over on a press to say what that way of working means (Will, Nov 24). Three layers, as on the card you get:
+   .tface leans toward the pointer, .tflip turns over, and the two faces sit back to back on it. */
+button.tcard { display: block; padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; appearance: none; -webkit-appearance: none; -webkit-tap-highlight-color: transparent; }
+button.tcard:focus-visible { border-radius: clamp(14px, 2vw, 28px); outline-offset: 10px; }
+.tface { display: block; position: relative; transform-style: preserve-3d; transition: transform var(--base) var(--ease-out); }
+.tflip { display: block; position: relative; transform-style: preserve-3d; transition: transform 520ms cubic-bezier(.77,0,.175,1); }
+.tcard.flipped .tflip { transform: rotateY(180deg); }
+.tfront, .tback { display: block; border: 4px solid var(--ink); border-radius: clamp(14px, 2vw, 28px); box-shadow: 8px 8px 0 var(--ink); text-align: left;
+  transform-style: preserve-3d; -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+.tfront { position: relative; padding: var(--tp) var(--tp) calc(var(--tp) + 4px); background: var(--c); }
+.tfront > * { -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+.tback { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: calc(100cqi / 18); padding: calc(var(--tp) + 2px); background: var(--paper); transform: rotateY(180deg); }
+.tback > * { transform: translateZ(14px); -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+.tback strong { padding: .25em .45em; border: 3px solid var(--ink); border-radius: 10px; background: var(--c); font: 900 calc(100cqi / 10.5 * var(--k, 1)) / 1 var(--display); }
+.tback .tread { font: 900 calc(100cqi / 5.8 * var(--k, 1)) / 1.02 var(--display); text-wrap: balance; }
+.tfront .flipme { position: absolute; right: -10px; top: -14px; font-size: clamp(11px, 1.3vw, 17px); }
 .tcard.live .tface { transition-duration: var(--fast); }
 .tcard.held .tface { transition: none; }
 .tclip { position: absolute; inset: 0; overflow: hidden; border-radius: inherit; pointer-events: none; }
@@ -201,7 +225,7 @@ body { background: var(--ground); overflow-x: clip; }
   .b1 .cue { display: none; }   /* the button is the way on here */
   .b2 .pen { right: -4vw; width: 46vw; }
   .b3 .pen.l { left: -4vw; width: 34vw; } .b3 .pen.r { right: -4vw; width: 34vw; }
-  .deck { margin-top: 8px; gap: 6px; } .tcard { width: 29vw; } .tface { box-shadow: 5px 5px 0 var(--ink); }
+  .deck { margin-top: 8px; gap: 6px; } .tcard { width: 29vw; } .tfront, .tback { box-shadow: 5px 5px 0 var(--ink); border-width: 3px; } .tfront .flipme { right: -6px; top: -12px; padding: 2px 5px; border-width: 2px; }
   .tface b { white-space: normal; text-align: center; text-wrap: balance; padding: 3px 6px; }      /* the tag may take two lines so it stays inside a narrow card */
   .b4 .amb svg:nth-child(3) { --y: 88% !important; }                                                  /* clear of the line under the cards */
   .amb svg { scale: .7; } .amb svg:nth-child(even) { display: none; }
@@ -212,6 +236,7 @@ body { background: var(--ground); overflow-x: clip; }
 /* motion turned down, or ?still=1 for screenshots: everything is already in place and nothing drifts */
 .still .word .ch, .still .say { transition: none; transform: none; opacity: 1; scale: 1; }
 .still .tug-car, .still .tug-half b, .still .wash, .still .b3 .pen img { transition: none; animation: none; }
+.still .tflip, .still .h-flip, .still .flipme { transition: none; }
 .still .tcard { transition: none; transform: rotate(var(--rest)) rotateY(var(--ry, 0deg)); }
 .still .amb svg, .still .cue, .still .tape, .still .seal::before { animation: none !important; }
 /* the line under the bar changes length as you drag. It keeps room for its longest form, so nothing else moves. */

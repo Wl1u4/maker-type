@@ -79,9 +79,9 @@
     <div class="amb" data-speed=".7" aria-hidden="true"><svg viewBox="0 0 48 48" style="--x:5%;--y:34%;--s:88px;--t:11s;--d:-4s;--dx:20px;--dy:-16px;--r0:8deg;--r1:-8deg"><use href="#g-zig"/></svg><svg viewBox="0 0 48 48" style="--x:90%;--y:26%;--s:56px;--t:9s;--d:-2s;--dx:-18px;--dy:20px;--r0:0deg;--r1:45deg"><use href="#g-dome"/></svg><svg viewBox="0 0 48 48" style="--x:7%;--y:76%;--s:48px;--t:8s;--d:-1s;--dx:-14px;--dy:18px;--r0:0deg;--r1:30deg"><use href="#g-plus"/></svg></div>
     <h2 class="word" style="--n: 6" data-word="RESULT" data-speed=".86"></h2>
     <div class="deck">
-      <div class="tcard" style="--c: var(--role-facilitator); --from: 108%; --turn: -10deg; --rest: -4deg; --ry: 14deg"><div class="tface"><span class="tclip"><i class="glare"></i></span><em>FACILITATOR</em><img src="assets/penguins/shaper-cheer.svg" alt="" width="240" height="245" loading="lazy"><b>leaning Design</b></div></div>
-      <div class="tcard" style="--c: var(--role-allrounder); --from: 0%; --turn: 0deg; --rest: 0deg; --ry: 0deg; --deal: 160ms; z-index: 2"><div class="tface"><span class="tclip"><i class="glare"></i></span><em>ALL ROUNDER</em><img src="assets/penguins/bridge-cheer.svg" alt="" width="240" height="245" loading="lazy"><b>in between</b></div></div>
-      <div class="tcard" style="--c: var(--role-planner); --from: -108%; --turn: 10deg; --rest: 4deg; --ry: -14deg; --deal: 220ms"><div class="tface"><span class="tclip"><i class="glare"></i></span><em>PLANNER</em><img src="assets/penguins/builder-cheer.svg" alt="" width="240" height="245" loading="lazy"><b>leaning IS</b></div></div>
+      <button type="button" class="tcard" data-role="facilitator" data-front="Facilitator, leaning Design." style="--c: var(--role-facilitator); --from: 108%; --turn: -10deg; --rest: -4deg; --ry: 14deg"><span class="tface"><span class="tflip"><span class="tfront"><span class="tclip"><i class="glare"></i></span><em>FACILITATOR</em><img src="assets/penguins/shaper-cheer.svg" alt="" width="240" height="245" loading="lazy"><b>leaning Design</b></span><span class="tback"><strong>Facilitator</strong><span class="tread">You get people moving together.</span></span></span></span></button>
+      <button type="button" class="tcard" data-role="allrounder" data-front="All Rounder, in between." style="--c: var(--role-allrounder); --from: 0%; --turn: 0deg; --rest: 0deg; --ry: 0deg; --deal: 160ms; z-index: 2"><span class="tface"><span class="tflip"><span class="tfront"><span class="tclip"><i class="glare"></i></span><em>ALL ROUNDER</em><img src="assets/penguins/bridge-cheer.svg" alt="" width="240" height="245" loading="lazy"><b>in between</b><i class="flipme">Flip me</i></span><span class="tback"><strong>All Rounder</strong><span class="tread">You do what the job needs.</span></span></span></span></button>
+      <button type="button" class="tcard" data-role="planner" data-front="Planner, leaning IS." style="--c: var(--role-planner); --from: -108%; --turn: 10deg; --rest: 4deg; --ry: -14deg; --deal: 220ms"><span class="tface"><span class="tflip"><span class="tfront"><span class="tclip"><i class="glare"></i></span><em>PLANNER</em><img src="assets/penguins/builder-cheer.svg" alt="" width="240" height="245" loading="lazy"><b>leaning IS</b></span><span class="tback"><strong>Planner</strong><span class="tread">You work out the steps before you start.</span></span></span></span></button>
     </div>
     <p class="says">How you work, plus which way you lean.</p>
     <a class="cue" href="#stage" aria-label="The quiz"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9l7 7 7-7"/></svg></a>
@@ -113,9 +113,7 @@
   <!-- Shown under the result once there is one -->
   <section class="more wrap" id="more" hidden aria-labelledby="more-h">
     <h2 id="more-h">Why this result</h2>
-    <p class="more-sub" id="more-sub"></p>
     <div class="bento" id="more-body"></div>
-    <p class="honest" id="more-honest"></p>
   </section>
 </main>
 

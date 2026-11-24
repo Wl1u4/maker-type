@@ -137,11 +137,47 @@
         ell(c, [25, 10, 23], accent, 4.5);
         if (cy > .25) [-7, 7].forEach((k) => rod(plus(c, [k, -3, 22]), plus(c, [k, 5, 24]), 3, INK));
       }); });
-      // ---- the tail: it stands out to one side so it can be seen from the front, and it wags. Faster when it is pleased. ----
-      { const glad = happy || t < this.hello, wag = sleep ? 0 : Math.sin(t / (glad ? 55 : 170)) * (glad ? 16 : 7);
-        const root = at(.8, 2.55, .95), mid = plus(root, [30 + wag * .5, -16, -8]), tip = plus(root, [48 + wag, -40, -10]);
-        const end = plus(tip, [6 + wag * .3, -16, 0]);
-        add(P(mid)[2] > 0 ? 40 : -150, () => { rod(root, mid, 15, INK); rod(mid, tip, 11, INK); rod(tip, end, 6.5, INK); }); }
+      // ---- the tail: one tapered shape. Thin where it joins, fuller in the middle, a round bushy white end, and a few tufts of fur
+      // along its outer edge. It swings from the root as one piece and the tip follows a beat late. Faster when the dog is pleased.
+      // It grows from the hip on the side of the free front leg, runs out under that paw and then up, so nothing the dog holds hides it.
+      // (Will, Nov 24: three rods end to end read as a tentacle, "it should be a bit furry".) ----
+      { const glad = happy || t < this.hello, beat = t / (glad ? 55 : 170);
+        const wag = sleep ? 0 : Math.sin(beat) * (glad ? .26 : .1), late = sleep ? 0 : Math.sin(beat - 1) * (glad ? .24 : .1);
+        const turn = (v, a) => [v[0] * Math.cos(a) - v[1] * Math.sin(a), v[0] * Math.sin(a) + v[1] * Math.cos(a), v[2]];
+        const root = at(.8, -2.55, .9), bend = plus(root, turn([-70, 8, -8], wag)), tip = plus(root, turn([-84, -72, -10], wag + late));
+        // more points toward the end, where the outline turns fastest
+        const n = 26, us = Array.from({ length: n + 1 }, (_, i) => Math.sin(Math.PI / 2 * i / n)), k = us.findIndex((u) => u >= .64), spine = [];
+        for (let i = 0; i <= n; i++) { const u = us[i]; spine.push(P(mix(mix(root, bend, u), mix(bend, tip, u), u))); }
+        const front = spine[n >> 1][2] > 0;
+        add(front ? 40 : -150, () => {
+          let A = [], B = [], tx = 1, ty = 0;
+          for (let i = 0; i <= n; i++) {
+            const u = us[i], a = spine[Math.max(0, i - 1)], b = spine[Math.min(n, i + 1)], len = Math.hypot(b[0] - a[0], b[1] - a[1]);
+            if (len > .01) { tx = (b[0] - a[0]) / len; ty = (b[1] - a[1]) / len; }
+            const grow = Math.min(1, u / .6), half = u < .6 ? 5 + 8 * grow * grow * (3 - 2 * grow) : 13 * Math.sqrt(Math.max(0, 1 - Math.pow((u - .6) / .4, 2))), [x, y] = spine[i];      // thin at the hip, full by the middle, a round end
+            A.push([x - ty * half, y + tx * half, x - ty * (half + 2.5) + tx * 6, y + tx * (half + 2.5) + ty * 6, tx, ty]);      // an edge point, the tuft that can grow from it, and which way the tail runs there
+            B.push([x + ty * half, y - tx * half, x + ty * (half + 2.5) + tx * 6, y - tx * (half + 2.5) + ty * 6, tx, ty]);
+          }
+          // the tufts grow on the outside of the curve, whichever way the dog is turned
+          const r = P(root), c = P(bend), e = P(tip);
+          if ((c[0] - r[0]) * (e[1] - c[1]) - (c[1] - r[1]) * (e[0] - c[0]) < 0) [A, B] = [B, A];
+          const tufts = [us.findIndex((u) => u >= .3), us.findIndex((u) => u >= .48)];
+          const shape = () => {
+            ctx.beginPath(); ctx.moveTo(A[0][0], A[0][1]);
+            for (let i = 1; i <= n; i++) ctx.lineTo(A[i][0], A[i][1]);
+            for (let i = n - 1; i >= 0; i--) { if (tufts.includes(i)) ctx.lineTo(B[i][2], B[i][3]); ctx.lineTo(B[i][0], B[i][1]); }
+            ctx.closePath();
+          };
+          if (front) { ctx.save(); bodyPath(); ctx.clip(); shape(); ctx.lineWidth = 7; ctx.strokeStyle = EDGE; ctx.stroke(); ctx.restore(); }
+          shape(); ctx.fillStyle = INK; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = INK; ctx.stroke();
+          // the white tip, with a jagged line of fur where it meets the black
+          const a = A[k], b = B[k], at2 = (u, d) => [a[0] + (b[0] - a[0]) * u - a[4] * d, a[1] + (b[1] - a[1]) * u - a[5] * d];
+          ctx.beginPath(); ctx.moveTo(a[0], a[1]);
+          for (let i = k + 1; i <= n; i++) ctx.lineTo(A[i][0], A[i][1]);
+          for (let i = n - 1; i >= k; i--) ctx.lineTo(B[i][0], B[i][1]);
+          [[.8, 5], [.6, -2], [.4, 6], [.2, -2]].forEach(([u, d]) => { const q = at2(1 - u, d); ctx.lineTo(q[0], q[1]); });
+          ctx.closePath(); ctx.fillStyle = CREAM; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = INK; ctx.stroke();
+        }); }
 
       // ---- front legs, each ending in a paw. A leg in front of the body gets a soft edge where it crosses it. ----
       const hands = [];

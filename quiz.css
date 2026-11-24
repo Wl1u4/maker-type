@@ -74,7 +74,7 @@
 .sure-tile { grid-column: span 3; align-content: end; gap: 8px; }
 /* The card on the page matches the image you save. Each way of working has its own card colour, and the lean is a
    chip in the lean's colour, so no two results give the same card. */
-.holo-card { background: var(--role, var(--ground)); }
+.h-front { background: var(--role, var(--ground)); }
 .h-word { color: var(--paper); }
 .h-ask { padding: 6px 8px; border: 3px solid var(--ink); border-radius: 12px; background: var(--lean, var(--paper)); }
 .h-pre { top: 22px; }
@@ -234,7 +234,6 @@
    your card and one next step. 3: every single answer, only for whoever opens it, and on the sheet you can print.
    Five type sizes in this part of the page: 56 the heading, 32 tile titles and big answers, 20 the lead, 16 text, 14 small.
    (From the "everything in a card" item on his slop list: the answers are a plain table inside the tile, with no box of their own.) */
-.more-sub { max-width: 40ch; }
 .tile h3 { font-size: 32px; }
 .tile.sums { grid-column: 1 / 9; background: var(--role-soft); }
 .tile.card-tile { grid-column: 9 / 13; grid-row: 1 / 3; }
