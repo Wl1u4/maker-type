@@ -283,6 +283,14 @@ button.tcard:focus-visible { border-radius: clamp(14px, 2vw, 28px); outline-offs
 .b1 .amb svg.deep { fill: var(--ink); }
 .b2 .amb svg.deep { opacity: .12; }                                          /* the dark chapter needs a little more to show at all */
 @media (max-width: 640px) { .amb svg.deep { scale: 1; --s: 62vw !important; } }
+/* A big phone or a small tablet held upright (481 to 640 wide) still gets the phone's arrangement, but sizes set in vw had grown
+   too big there: at 600 by 960 the first bubble touched MAKER?, the QUICK bubble sat on the sentence and the LEAN dogs reached
+   the line under the bar (checker, Nov 24). So the dogs stop growing and the first bubble sits lower. */
+@media (min-width: 481px) and (max-width: 640px) {
+  .b1 .pen.big .say { left: max(2%, calc(var(--p) * .57 - 50vw + 16px)); bottom: 60%; }      /* the dog is wider than the screen here: the bubble stays 16px inside the left edge */
+  .b2 .pen { width: min(46vw, 200px); right: 2vw; }
+  .b3 .pen.l, .b3 .pen.r { width: min(34vw, 140px); } .b3 .pen.l { left: 0; } .b3 .pen.r { right: 0; }
+}
 /* the tape's stripes sit on their own strip inside the tape, a little longer than it, so they can slide like a barber's pole.
    One step is one stripe pair along the tape: 68px on the slant is 96.17px across. */
 .tape { background: var(--tone-2); }
