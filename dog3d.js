@@ -144,7 +144,7 @@
       { const glad = happy || t < this.hello, beat = t / (glad ? 55 : 170);
         const wag = sleep ? 0 : Math.sin(beat) * (glad ? .26 : .1), late = sleep ? 0 : Math.sin(beat - 1) * (glad ? .24 : .1);
         const turn = (v, a) => [v[0] * Math.cos(a) - v[1] * Math.sin(a), v[0] * Math.sin(a) + v[1] * Math.cos(a), v[2]];
-        const root = at(.8, -2.55, .9), bend = plus(root, turn([-70, 8, -8], wag)), tip = plus(root, turn([-84, -72, -10], wag + late));
+        const root = at(.8, -2.55, .9), bend = plus(root, turn([-52, 6, -8], wag)), tip = plus(root, turn([-62, -54, -10], wag + late));      // three quarters of its first size (Will, Nov 24: "a bit too big")
         // more points toward the end, where the outline turns fastest
         const n = 26, us = Array.from({ length: n + 1 }, (_, i) => Math.sin(Math.PI / 2 * i / n)), k = us.findIndex((u) => u >= .64), spine = [];
         for (let i = 0; i <= n; i++) { const u = us[i]; spine.push(P(mix(mix(root, bend, u), mix(bend, tip, u), u))); }
@@ -154,9 +154,9 @@
           for (let i = 0; i <= n; i++) {
             const u = us[i], a = spine[Math.max(0, i - 1)], b = spine[Math.min(n, i + 1)], len = Math.hypot(b[0] - a[0], b[1] - a[1]);
             if (len > .01) { tx = (b[0] - a[0]) / len; ty = (b[1] - a[1]) / len; }
-            const grow = Math.min(1, u / .6), half = u < .6 ? 5 + 8 * grow * grow * (3 - 2 * grow) : 13 * Math.sqrt(Math.max(0, 1 - Math.pow((u - .6) / .4, 2))), [x, y] = spine[i];      // thin at the hip, full by the middle, a round end
-            A.push([x - ty * half, y + tx * half, x - ty * (half + 2.5) + tx * 6, y + tx * (half + 2.5) + ty * 6, tx, ty]);      // an edge point, the tuft that can grow from it, and which way the tail runs there
-            B.push([x + ty * half, y - tx * half, x + ty * (half + 2.5) + tx * 6, y - tx * (half + 2.5) + ty * 6, tx, ty]);
+            const grow = Math.min(1, u / .6), half = u < .6 ? 4 + 6 * grow * grow * (3 - 2 * grow) : 10 * Math.sqrt(Math.max(0, 1 - Math.pow((u - .6) / .4, 2))), [x, y] = spine[i];      // thin at the hip, full by the middle, a round end
+            A.push([x - ty * half, y + tx * half, x - ty * (half + 2) + tx * 5, y + tx * (half + 2) + ty * 5, tx, ty]);      // an edge point, the tuft that can grow from it, and which way the tail runs there
+            B.push([x + ty * half, y - tx * half, x + ty * (half + 2) + tx * 5, y - tx * (half + 2) + ty * 5, tx, ty]);
           }
           // the tufts grow on the outside of the curve, whichever way the dog is turned
           const r = P(root), c = P(bend), e = P(tip);
@@ -175,7 +175,7 @@
           ctx.beginPath(); ctx.moveTo(a[0], a[1]);
           for (let i = k + 1; i <= n; i++) ctx.lineTo(A[i][0], A[i][1]);
           for (let i = n - 1; i >= k; i--) ctx.lineTo(B[i][0], B[i][1]);
-          [[.8, 5], [.6, -2], [.4, 6], [.2, -2]].forEach(([u, d]) => { const q = at2(1 - u, d); ctx.lineTo(q[0], q[1]); });
+          [[.8, 4], [.6, -1.5], [.4, 4.5], [.2, -1.5]].forEach(([u, d]) => { const q = at2(1 - u, d); ctx.lineTo(q[0], q[1]); });
           ctx.closePath(); ctx.fillStyle = CREAM; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = INK; ctx.stroke();
         }); }
 
